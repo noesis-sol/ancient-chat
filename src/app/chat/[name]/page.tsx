@@ -7,7 +7,7 @@ export default function ChatWith({params: {name}}: { params: { name: string } })
     const [messages, setMessages] = useState<MessageProps[]>([]);
     const inputRef = useRef(null);
     return (
-        <div className="flex h-screen antialiased text-gray-800">
+        <div className="flex h-[calc(100vh-60px)] antialiased text-gray-800">
             <div className="flex flex-row h-full w-full overflow-x-hidden">
                 <div className="flex flex-col py-6 pl-6 pr-2 w-64 bg-white flex-shrink-0">
                     <div className="flex flex-row items-center justify-center w-full">
