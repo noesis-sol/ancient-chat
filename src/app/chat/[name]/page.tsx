@@ -11,18 +11,14 @@ export default function ChatWith({params: {name}}: { params: { name: string } })
             <div className="flex flex-row h-full w-full overflow-x-hidden">
                 <div className="flex flex-col py-6 pl-6 pr-2 w-64 bg-white flex-shrink-0">
                     <div className="flex flex-row items-center justify-center w-full">
-                        <div
-                            className="flex flex-col items-center w-full rounded-lg"
-                        >
-                            <img className="rounded object-contain" src={`/ancients/${name}.jpeg`}/>
+                        <div className="flex flex-col items-center w-full rounded-lg">
+                            <img className="rounded object-contain" src={`/ancients/${name}.jpeg`} alt={name}/>
                             <h2 className="text-xl font-semibold mt-4">{name}</h2>
                         </div>
                     </div>
                 </div>
-                <div className="flex flex-col flex-auto h-full p-6 flex-row-reverse">
-                    <div
-                        className="flex flex-col flex-auto flex-shrink-0 rounded-2xl bg-gray-100 h-full p-4"
-                    >
+                <div className="flex flex-col flex-auto h-full p-6">
+                    <div className="flex flex-col flex-auto flex-shrink-0 rounded-2xl bg-gray-100 h-full p-4">
                         <div className="flex flex-col h-full overflow-x-auto mb-4">
                             <div className="flex flex-col h-full">
                                 <div className="grid grid-cols-12 gap-y-2">
