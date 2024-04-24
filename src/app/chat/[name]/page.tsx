@@ -3,17 +3,18 @@
 import Message, {MessageProps} from "@/app/chat/[name]/message";
 import {useRef, useState} from "react";
 import {PaperAirplaneIcon} from "@heroicons/react/16/solid";
+import Image from "next/image";
 
 export default function ChatWith({params: {name}}: { params: { name: string } }) {
     const [messages, setMessages] = useState<MessageProps[]>([]);
     const inputRef = useRef(null);
     return (
-        <div className="flex h-[calc(100vh-64px)] antialiased text-gray-800">
+        <div className="flex h-[calc(100vh-120px)] antialiased text-gray-800">
             <div className="flex flex-row h-full w-full overflow-x-hidden">
 
                 <div className="card card-compact w-64 max-h-96 m-6 bg-base-100 shadow-xl">
-                    <figure><img src={`/ancients/${name}.jpeg`}
-                                 alt={name}/></figure>
+                    <figure><Image src={`/ancients/${name}.jpeg`}
+                                   alt={name}/></figure>
                     <div className="card-body">
                         <h2 className="card-title">{name.charAt(0).toUpperCase()
                             + name.slice(1)}</h2>
