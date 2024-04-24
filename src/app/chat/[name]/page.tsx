@@ -2,22 +2,25 @@
 
 import Message, {MessageProps} from "@/app/chat/[name]/message";
 import {useRef, useState} from "react";
+import {PaperAirplaneIcon} from "@heroicons/react/16/solid";
 
 export default function ChatWith({params: {name}}: { params: { name: string } }) {
     const [messages, setMessages] = useState<MessageProps[]>([]);
     const inputRef = useRef(null);
     return (
-        <div className="flex h-[calc(100vh-60px)] antialiased text-gray-800">
+        <div className="flex h-[calc(100vh-64px)] antialiased text-gray-800">
             <div className="flex flex-row h-full w-full overflow-x-hidden">
-                <div className="flex flex-col py-6 pl-6 pr-2 w-64 bg-white flex-shrink-0">
-                    <div className="flex flex-row items-center justify-center w-full">
-                        <div className="flex flex-col items-center w-full rounded-lg">
-                            <img className="rounded object-contain" src={`/ancients/${name}.jpeg`} alt={name}/>
-                            <h2 className="text-xl font-semibold mt-4">{name}</h2>
-                        </div>
+
+                <div className="card card-compact w-64 max-h-96 m-6 bg-base-100 shadow-xl">
+                    <figure><img src={`/ancients/${name}.jpeg`}
+                                 alt={name}/></figure>
+                    <div className="card-body">
+                        <h2 className="card-title">{name.charAt(0).toUpperCase()
+                            + name.slice(1)}</h2>
+                        <p>If a dog chews shoes whose shoes does he choose?</p>
                     </div>
                 </div>
-                <div className="flex flex-col flex-auto h-full p-6">
+                <div className="flex flex-col flex-auto h-full pl-3 p-6">
                     <div className="flex flex-col flex-auto flex-shrink-0 rounded-2xl bg-gray-100 h-full p-4">
                         <div className="flex flex-col h-full overflow-x-auto mb-4">
                             <div className="flex flex-col h-full">
@@ -42,36 +45,21 @@ export default function ChatWith({params: {name}}: { params: { name: string } })
                             }
                         }} className="flex flex-row items-center h-16 rounded-xl bg-white w-full px-4">
 
-                            <div className="flex-grow ml-4">
+                            <div className="flex-grow">
                                 <div className="relative w-full">
                                     <input
                                         ref={inputRef}
-                                        type="text"
-                                        className="flex w-full border rounded-xl focus:outline-none focus:border-indigo-300 pl-4 h-10"
-                                    />
+
+                                        type="text" placeholder="Type here"
+                                        className="input input-bordered w-full "/>
                                 </div>
                             </div>
                             <div className="ml-4">
                                 <button
-                                    className="flex items-center justify-center bg-indigo-500 hover:bg-indigo-600 rounded-xl text-white px-4 py-1 flex-shrink-0"
+                                    className="btn btn-primary"
                                 >
                                     <span>Send</span>
-                                    <span className="ml-2">
-                  <svg
-                      className="w-4 h-4 transform rotate-45 -mt-px"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                    ></path>
-                  </svg>
-                </span>
+                                    <PaperAirplaneIcon className="h-5"></PaperAirplaneIcon>
                                 </button>
                             </div>
                         </form>
