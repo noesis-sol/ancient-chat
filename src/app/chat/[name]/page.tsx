@@ -3,22 +3,26 @@
 import Message, {MessageProps} from "@/app/chat/[name]/message";
 import {useRef, useState} from "react";
 import {PaperAirplaneIcon} from "@heroicons/react/16/solid";
-import Image from "next/image";
+import {ancients} from "@/app/chat/ancients";
 
 export default function ChatWith({params: {name}}: { params: { name: string } }) {
     const [messages, setMessages] = useState<MessageProps[]>([]);
     const inputRef = useRef(null);
+    const ancient = ancients.find(ancient => ancient.name.toLowerCase() === name.toLowerCase()) ?? {
+        name: 'Unknown',
+        image: '/ancients/unknown.jpeg',
+        year: 'Unknown'
+    };
     return (
         <div className="flex h-[calc(100vh-120px)] antialiased text-gray-800">
             <div className="flex flex-row h-full w-full overflow-x-hidden">
 
                 <div className="card card-compact w-64 max-h-96 m-6 bg-base-100 shadow-xl">
-                    <figure><Image src={`/ancients/${name}.jpeg`}
-                                   alt={name}/></figure>
+                    <figure><img src={ancient.image}
+                                 alt={ancient.name}/></figure>
                     <div className="card-body">
-                        <h2 className="card-title">{name.charAt(0).toUpperCase()
-                            + name.slice(1)}</h2>
-                        <p>If a dog chews shoes whose shoes does he choose?</p>
+                        <h2 className="card-title">{ancient.name}</h2>
+                        <p>{ancient.year}</p>
                     </div>
                 </div>
                 <div className="flex flex-col flex-auto h-full pl-3 p-6">

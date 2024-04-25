@@ -5,7 +5,6 @@ export interface MessageProps {
     direction: 'incoming' | 'outgoing';
 }
 
-
 export default function Message({message, user, direction}: MessageProps) {
     let chatDirection = 'chat-start';
     if (direction === 'outgoing') {

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import Image from "next/image"
 
 export default function Home() {
     return (
@@ -8,6 +8,8 @@ export default function Home() {
             <div className="hero min-h-[calc(100vh-120px)] bg-base-200">
                 <div className="hero-content flex-col lg:flex-row-reverse">
                     <Image
+                        width={176}
+                        height={176}
                         alt="AGRs logo"
                         src="https://yt3.googleusercontent.com/4eUXHkAB-XSqTDzKwvWHmQgZ2njUkqbqoXRIi9kHayq_ssr_8zqw5HMfDMQjSw-Fx8wXPLWAfbM=s176-c-k-c0x00ffffff-no-rj"
                         className="max-w-sm rounded-lg shadow-2xl"/>
