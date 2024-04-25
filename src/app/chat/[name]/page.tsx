@@ -4,6 +4,7 @@ import Message, {MessageProps} from "@/app/chat/[name]/message";
 import {useRef, useState} from "react";
 import {PaperAirplaneIcon} from "@heroicons/react/16/solid";
 import {ancients} from "@/app/chat/ancients";
+import {redirect} from "next/navigation";
 
 export default function ChatWith({params: {name}}: { params: { name: string } }) {
     const [messages, setMessages] = useState<MessageProps[]>([]);
@@ -11,8 +12,14 @@ export default function ChatWith({params: {name}}: { params: { name: string } })
     const ancient = ancients.find(ancient => ancient.name.toLowerCase() === name.toLowerCase()) ?? {
         name: 'Unknown',
         image: '/ancients/unknown.jpeg',
-        year: 'Unknown'
+        year: 'Unknown',
+        isEnabled: false
     };
+
+    if (!ancient.isEnabled) {
+        redirect('/chat');
+    }
+    
     return (
         <div className="flex h-[calc(100vh-120px)] antialiased text-gray-800">
             <div className="flex flex-row h-full w-full overflow-x-hidden">
