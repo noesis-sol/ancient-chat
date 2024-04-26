@@ -19,7 +19,28 @@ export default function ChatWith({params: {name}}: { params: { name: string } })
     if (!ancient.isEnabled) {
         redirect('/chat');
     }
-    
+
+    const askAncient = async (question: MessageProps) => {
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            body: JSON.stringify({
+                question: question.message,
+                chatHistory: []
+                // messages.filter(message => message.direction === 'outgoing')
+                // .map(message => message.message)
+            })
+        });
+
+        const data = await response.text();
+
+        setMessages([...messages, question, {
+            id: Date.now().toString(),
+            direction: 'incoming',
+            message: data,
+            user: 'me'
+        }]);
+    }
+
     return (
         <div className="flex h-[calc(100vh-120px)] antialiased text-gray-800">
             <div className="flex flex-row h-full w-full overflow-x-hidden">
@@ -35,7 +56,7 @@ export default function ChatWith({params: {name}}: { params: { name: string } })
                 <div className="flex flex-col flex-auto h-full pl-3 p-6">
                     <div className="flex flex-col flex-auto flex-shrink-0 rounded-2xl bg-gray-100 h-full p-4">
                         <div className="flex flex-col h-full overflow-x-auto mb-4">
-                            <div className="flex flex-col h-full">
+                            <div className="flex flex-col h-full max-w-4xl">
                                 <div className="grid grid-cols-12 gap-y-2">
                                     {messages.map(message => (
                                         <Message key={message.id} message={message.message}
@@ -44,17 +65,26 @@ export default function ChatWith({params: {name}}: { params: { name: string } })
                                 </div>
                             </div>
                         </div>
-                        <form onSubmit={(e) => {
+                        <form onSubmit={async (e) => {
                             e.preventDefault();
                             if (inputRef.current?.value) {
-                                setMessages([...messages, {
+                                const q = inputRef.current.value;
+
+                                const userMessage: MessageProps = {
                                     id: Date.now().toString(),
                                     direction: 'outgoing',
                                     message: inputRef.current.value,
                                     user: 'me'
-                                }])
+                                };
+
+                                setMessages([...messages, userMessage]);
+
                                 inputRef.current.value = '';
+
+                                await askAncient(userMessage);
                             }
+
+
                         }} className="flex flex-row items-center h-16 rounded-xl bg-white w-full px-4">
 
                             <div className="flex-grow">
