@@ -67,19 +67,19 @@ export default function ChatWith({params: {name}}: { params: { name: string } })
                         </div>
                         <form onSubmit={async (e) => {
                             e.preventDefault();
-                            if (inputRef.current?.value) {
-                                const q = inputRef.current.value;
+                            if (inputRef.current != null && inputRef.current['value'] != null) {
+                                const q = inputRef.current['value'];
 
                                 const userMessage: MessageProps = {
                                     id: Date.now().toString(),
                                     direction: 'outgoing',
-                                    message: inputRef.current.value,
+                                    message: inputRef.current['value'],
                                     user: 'me'
                                 };
 
                                 setMessages([...messages, userMessage]);
 
-                                inputRef.current.value = '';
+                                inputRef.current['value'] = '' as never;
 
                                 await askAncient(userMessage);
                             }
