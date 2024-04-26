@@ -44,8 +44,7 @@ export default function ChatWith({params: {name}}: { params: { name: string } })
     return (
         <div className="flex h-[calc(100vh-120px)] antialiased text-gray-800">
             <div className="flex flex-row h-full w-full overflow-x-hidden">
-
-                <div className="card card-compact w-64 max-h-96 m-6 bg-base-100 shadow-xl">
+                <div className="card card-compact w-64 max-h-96 m-6 bg-base-100 shadow-xl flex-none">
                     <figure><img src={ancient.image}
                                  alt={ancient.name}/></figure>
                     <div className="card-body">
@@ -56,7 +55,7 @@ export default function ChatWith({params: {name}}: { params: { name: string } })
                 <div className="flex flex-col flex-auto h-full pl-3 p-6">
                     <div className="flex flex-col flex-auto flex-shrink-0 rounded-2xl bg-gray-100 h-full p-4">
                         <div className="flex flex-col h-full overflow-x-auto mb-4">
-                            <div className="flex flex-col h-full max-w-4xl">
+                            <div className="flex flex-col h-full">
                                 <div className="grid grid-cols-12 gap-y-2">
                                     {messages.map(message => (
                                         <Message key={message.id} message={message.message}
@@ -85,15 +84,14 @@ export default function ChatWith({params: {name}}: { params: { name: string } })
                             }
 
 
-                        }} className="flex flex-row items-center h-16 rounded-xl bg-white w-full px-4">
+                        }} className="flex flex-row items-center h-16 rounded-xl bg-white w-full p-4">
 
                             <div className="flex-grow">
                                 <div className="relative w-full">
                                     <input
                                         ref={inputRef}
-
                                         type="text" placeholder="Type here"
-                                        className="input input-bordered w-full "/>
+                                        className="input input-bordered w-full"/>
                                 </div>
                             </div>
                             <div className="ml-4">

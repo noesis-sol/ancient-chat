@@ -4,7 +4,7 @@ import Image from "next/image"
 export default function Home() {
     return (
         <section
-            className="bg-white dark:bg-[#0b1727] text-indigo-900 dark:text-white relative z-10 overflow-hidden">
+            className="bg-white dark:bg-[#0b1727] dark:text-white relative z-10 overflow-hidden">
             <div className="hero min-h-[calc(100vh-120px)] bg-base-200">
                 <div className="hero-content flex-col lg:flex-row-reverse">
                     <Image
