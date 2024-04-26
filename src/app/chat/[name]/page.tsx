@@ -31,7 +31,7 @@ export default function ChatWith({params: {name}}: { params: { name: string } })
             })
         });
 
-        const data = await response.text();
+        const {response: data} = await response.json();
 
         setMessages([...messages, question, {
             id: Date.now().toString(),
