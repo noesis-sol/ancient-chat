@@ -1,9 +1,8 @@
 import {NextRequest, NextResponse} from "next/server";
 import {ChatOpenAI, OpenAIEmbeddings} from "@langchain/openai";
-// import {Message as VercelChatMessage, StreamingTextResponse} from "ai";
 import {Pinecone} from "@pinecone-database/pinecone";
 import {PineconeStore} from "@langchain/pinecone";
-import {ChatPromptTemplate} from "@langchain/core/prompts";
+import {ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate} from "@langchain/core/prompts";
 import {ConversationalRetrievalQAChain} from "langchain/chains";
 import {BufferMemory} from "langchain/memory";
 
@@ -18,40 +17,46 @@ const TEMPLATE = `You are Aristotle, an ancient Greek philosopher.
     Limit your answers to the context below.
     ----
     {context}
-    ----
-    
-    Question: {question}`
+    ----`
+
+const USER_TEMPLATE = "Question: {question}"
+
+const messages = [
+    SystemMessagePromptTemplate.fromTemplate(TEMPLATE),
+    HumanMessagePromptTemplate.fromTemplate(USER_TEMPLATE)
+];
 
 interface PostParams {
     question: string
-    chatHistory: string[]
 }
 
-// const formatMessage = (message: VercelChatMessage) => {
-//     return `${message.role}: ${message.content}`;
-// };
-
 export async function POST(request: NextRequest) {
-    const {question, chatHistory} = (await request.json()) as PostParams;
+    const {question} = (await request.json()) as PostParams;
     try {
         const vectorStore: PineconeStore = await PineconeStore.fromExistingIndex(
             new OpenAIEmbeddings(),
             {pineconeIndex}
         );
-        const prompt = ChatPromptTemplate.fromTemplate(TEMPLATE);
+        const prompt = ChatPromptTemplate.fromMessages(messages);
 
         const model = new ChatOpenAI({
             modelName: "gpt-3.5-turbo-1106",
             temperature: 0.2,
         });
 
+        const bufferMemory = new BufferMemory({
+            memoryKey: "chat_history", // Must be set to "chat_history"
+            inputKey: 'question',
+            outputKey: 'text',
+            returnMessages: true,
+        })
+
         const chain = ConversationalRetrievalQAChain.fromLLM(
             model,
             vectorStore.asRetriever(),
             {
-                memory: new BufferMemory({
-                    memoryKey: "chat_history", // Must be set to "chat_history"
-                }),
+                memory: bufferMemory,
+                returnSourceDocuments: true,
                 qaChainOptions: {
                     prompt,
                     type: "stuff",
@@ -59,7 +64,8 @@ export async function POST(request: NextRequest) {
             },
         )
         const response = await chain.invoke({question});
-        return NextResponse.json({response: response.text});
+
+        return NextResponse.json({response: response});
     } catch (e: any) {
         return NextResponse.json({error: e.message}, {status: e.status ?? 500});
     }

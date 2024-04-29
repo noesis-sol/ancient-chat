@@ -36,7 +36,7 @@ export default function ChatWith({params: {name}}: { params: { name: string } })
         setMessages([...messages, question, {
             id: Date.now().toString(),
             direction: 'incoming',
-            message: data,
+            message: data.text,
             user: 'me'
         }]);
     }
