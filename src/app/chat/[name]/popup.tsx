@@ -1,9 +1,9 @@
 export default function Popup({id, title, text}: { id: string, title: string, text: [string] }) {
     return (
         <>
-            <button className="btn btn-link min-h-0 h-auto"
-                    onClick={() => document.getElementById(id)?.showModal()}>{title}
-            </button>
+            <a className="btn btn-link min-h-0 h-auto"
+               href={`#${id}`}>{title}
+            </a>
             <dialog id={id} className="modal text-black">
                 <div className="modal-box">
                     <h3 className="font-bold text-lg">Source</h3>
