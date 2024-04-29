@@ -25,7 +25,6 @@ export default function ChatWith({params: {name}}: { params: { name: string } })
             method: 'POST',
             body: JSON.stringify({
                 question: question.message,
-                chatHistory: []
                 // messages.filter(message => message.direction === 'outgoing')
                 // .map(message => message.message)
             })
@@ -33,10 +32,13 @@ export default function ChatWith({params: {name}}: { params: { name: string } })
 
         const {response: data} = await response.json();
 
+        const source = data.sourceDocuments?.map((doc: { pageContent: string }) => doc.pageContent);
+        
         setMessages([...messages, question, {
             id: Date.now().toString(),
             direction: 'incoming',
             message: data.text,
+            source,
             user: 'me'
         }]);
     }
@@ -58,7 +60,8 @@ export default function ChatWith({params: {name}}: { params: { name: string } })
                             <div className="flex flex-col h-full">
                                 <div className="grid grid-cols-12 gap-y-2">
                                     {messages.map(message => (
-                                        <Message key={message.id} message={message.message}
+                                        <Message key={message.id} message={message.message} source={message.source}
+                                                 id={message.id}
                                                  direction={message.direction}/>
                                     ))}
                                 </div>
