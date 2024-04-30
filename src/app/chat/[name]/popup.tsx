@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Popup({id, title, text}: { id: string, title: string, text: [string] }) {
     return (
         <>
@@ -11,9 +13,13 @@ export default function Popup({id, title, text}: { id: string, title: string, te
                 <div className="modal-box relative max-w-none max-w-4xl">
                     <h3 className="font-bold text-lg">Source</h3>
                     <p className="p-4">
-                        <ol className="list-decimal">
+                        <ol className="list-disc">
                             {text.map(s => (
-                                <li key={Date.now().toString()}>{s}</li>))}
+                                <li key={Date.now().toString()}>{`"${s}" - `} <Link
+                                    target="_blank"
+                                    href="https://www.perseus.tufts.edu/hopper/text?doc=Perseus%3Atext%3A1999.01.0054%3Abekker%20page%3D1167b%3Abekker%20line%3D20">Nicomachean
+                                    Ethics</Link>
+                                </li>))}
                         </ol>
                     </p>
                 </div>

@@ -5,6 +5,7 @@ import {useRef, useState} from "react";
 import {PaperAirplaneIcon} from "@heroicons/react/16/solid";
 import {ancients} from "@/app/chat/ancients";
 import {redirect} from "next/navigation";
+import './style.css';
 
 export default function ChatWith({params: {name}}: { params: { name: string } }) {
     const [messages, setMessages] = useState<MessageProps[]>([]);
@@ -44,7 +45,7 @@ export default function ChatWith({params: {name}}: { params: { name: string } })
     }
 
     return (
-        <div className="flex h-[calc(100vh-120px)] antialiased text-gray-800">
+        <div className="flex h-[calc(100vh-120px)] antialiased text-gray-800 chat-page">
             <div className="flex flex-row h-full w-full overflow-x-hidden">
                 <div
                     className="invisible w-0 md:w-64 md:m-6 md:visible card card-compact max-h-96 bg-base-100 shadow-xl flex-none">
