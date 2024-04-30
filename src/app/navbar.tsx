@@ -4,7 +4,7 @@ import {SignedIn, UserButton} from "@clerk/nextjs";
 
 export default function Navbar() {
     return (
-        <header className="navbar fixed top-0 z-50 bg-black text-white h-16">
+        <header className="navbar fixed top-0 z-50 bg-black text-white h-16 w-full">
             <div className='flex flex-1 justify-between'>
                 <Link href='/chat' className="btn btn-ghost text-xl">
                     <Image className="border-solid border border-white rounded-full border-2" alt="AGRs logo"

@@ -20,7 +20,7 @@ export default function Message({message, id, user, source, direction}: MessageP
         <div className="col-start-1 col-end-13">
             <div className={`chat ${chatDirection}`}>
                 <div className={`chat-bubble ${chatBg}`}>{message} {source ?
-                    <Popup id={id ?? Date.now().toString()} text={source} title="source"/> : null}</div>
+                    <Popup id={id ?? Date.now().toString()} text={source} title="view source"/> : null}</div>
             </div>
         </div>
     );

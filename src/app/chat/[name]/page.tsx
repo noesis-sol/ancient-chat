@@ -45,7 +45,7 @@ export default function ChatWith({params: {name}}: { params: { name: string } })
     }
 
     return (
-        <div className="flex h-[calc(100vh-120px)] antialiased text-gray-800 chat-page">
+        <div className="flex h-[calc(100vh-120px)] antialiased text-gray-800">
             <div className="flex flex-row h-full w-full overflow-x-hidden">
                 <div
                     className="invisible w-0 md:w-64 md:m-6 md:visible card card-compact max-h-96 bg-base-100 shadow-xl flex-none">
@@ -56,7 +56,7 @@ export default function ChatWith({params: {name}}: { params: { name: string } })
                         <p>{ancient.year}</p>
                     </div>
                 </div>
-                <div className="flex flex-col flex-auto h-full p-6 md:pl-0">
+                <div className="flex flex-col flex-auto h-full p-6 md:pl-0 chat-box">
                     <div className="flex flex-col flex-auto flex-shrink-0 rounded-2xl bg-gray-100 h-full p-4">
                         <div className="flex flex-col h-full overflow-x-auto mb-4">
                             <div className="flex flex-col h-full">
