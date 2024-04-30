@@ -2,11 +2,13 @@ export default function Popup({id, title, text}: { id: string, title: string, te
     return (
         <>
             {/* @ts-ignore */}
-            <button className="btn btn-link min-h-0 h-auto" onClick={() => document.getElementById(id)?.showModal()}>
+            <label for={id} className="btn btn-link min-h-0 h-auto">
                 {title}
-            </button>
-            <dialog id={id} className="modal text-black">
-                <div className="modal-box">
+            </label>
+            <input type="checkbox" id={id} className="modal-toggle"/>
+            {/* @ts-ignore */}
+            <label for={id} className="modal text-black">
+                <div className="modal-box relative max-w-none max-w-4xl">
                     <h3 className="font-bold text-lg">Source</h3>
                     <p className="p-4">
                         <ol className="list-decimal">
@@ -14,14 +16,8 @@ export default function Popup({id, title, text}: { id: string, title: string, te
                                 <li key={Date.now().toString()}>{s}</li>))}
                         </ol>
                     </p>
-                    <div className="modal-action">
-                        <form method="dialog">
-                            {/* if there is a button in form, it will close the modal */}
-                            <button className="btn">Close</button>
-                        </form>
-                    </div>
                 </div>
-            </dialog>
+            </label>
         </>
     )
 }

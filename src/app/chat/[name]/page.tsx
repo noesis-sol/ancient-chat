@@ -33,7 +33,7 @@ export default function ChatWith({params: {name}}: { params: { name: string } })
         const {response: data} = await response.json();
 
         const source = data.sourceDocuments?.map((doc: { pageContent: string }) => doc.pageContent);
-        
+
         setMessages([...messages, question, {
             id: Date.now().toString(),
             direction: 'incoming',
@@ -46,7 +46,8 @@ export default function ChatWith({params: {name}}: { params: { name: string } })
     return (
         <div className="flex h-[calc(100vh-120px)] antialiased text-gray-800">
             <div className="flex flex-row h-full w-full overflow-x-hidden">
-                <div className="card card-compact w-64 max-h-96 m-6 bg-base-100 shadow-xl flex-none">
+                <div
+                    className="invisible w-0 md:w-64 md:m-6 md:visible card card-compact max-h-96 bg-base-100 shadow-xl flex-none">
                     <figure><img src={ancient.image}
                                  alt={ancient.name}/></figure>
                     <div className="card-body">
@@ -54,7 +55,7 @@ export default function ChatWith({params: {name}}: { params: { name: string } })
                         <p>{ancient.year}</p>
                     </div>
                 </div>
-                <div className="flex flex-col flex-auto h-full pl-3 p-6">
+                <div className="flex flex-col flex-auto h-full p-6 md:pl-0">
                     <div className="flex flex-col flex-auto flex-shrink-0 rounded-2xl bg-gray-100 h-full p-4">
                         <div className="flex flex-col h-full overflow-x-auto mb-4">
                             <div className="flex flex-col h-full">

@@ -1,6 +1,6 @@
 export default function Footer() {
     return (
-        <footer className="footer items-center p-4 bg-black text-white fixed bottom-0 z-50">
+        <footer className="footer items-center p-4 bg-black text-white md:fixed md:bottom-0 md:z-50">
             <aside className="items-center grid-flow-col">
                 <p>AGR</p>
                 <p>Copyright © {new Date().getFullYear()} - All right reserved</p>
