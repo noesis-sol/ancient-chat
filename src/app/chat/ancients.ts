@@ -42,4 +42,5 @@ export const ancients: Ancient[] = [
         image: "/ancients/heraclitus.jpeg",
         year: "540-480 BC",
         isEnabled: false
-    }];
+    }
+];

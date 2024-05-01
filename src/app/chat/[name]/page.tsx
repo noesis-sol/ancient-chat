@@ -56,7 +56,7 @@ export default function ChatWith({params: {name}}: { params: { name: string } })
                         <p>{ancient.year}</p>
                     </div>
                 </div>
-                <div className="flex flex-col flex-auto h-full p-6 md:pl-0 chat-box">
+                <div className="flex flex-col flex-auto h-full sm:p-6 md:pl-0 chat-box text-lg">
                     <div className="flex flex-col flex-auto flex-shrink-0 rounded-2xl bg-gray-100 h-full p-4">
                         <div className="flex flex-col h-full overflow-x-auto mb-4">
                             <div className="flex flex-col h-full">

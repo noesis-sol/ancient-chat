@@ -36,7 +36,7 @@ export default function RootLayout({
             <html lang="en" className={lemonMilkFont.className}>
             <body>
             <Navbar/>
-            <main className='pt-16'>
+            <main className='pt-16 max-md:pb-16'>
                 {children}
             </main>
             <Footer/>
