@@ -6,7 +6,7 @@ import {ancients} from "@/app/chat/ancients";
 
 export default function Chat() {
     return (
-        <section className="mx-auto pb-5 md:pb-20 lg:max-w-6xl ">
+        <section className="mx-auto pb-5 md:pb-20 lg:max-w-6xl max-md:mb-16 ">
             <h1 className="text-3xl md:text-5xl font-bold text-center m-12">Choose your philosopher!</h1>
             <div
                 className="grid sm:grid-cols-2 md:grid-cols-3 gap-5 lg:grid-cols-4 justify-center justify-items-center">
