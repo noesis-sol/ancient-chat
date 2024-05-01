@@ -59,7 +59,7 @@ export default function ChatWith({params: {name}}: { params: { name: string } })
                 <div className="flex flex-col flex-auto h-full sm:p-6 md:pl-0 chat-box text-lg">
                     <div className="flex flex-col flex-auto flex-shrink-0 rounded-2xl bg-gray-100 h-full p-4">
                         <div className="flex flex-col h-full overflow-x-auto mb-4">
-                            <div className="flex flex-col h-full">
+                            <div className="flex flex-col-reverse h-full overflow-x-auto">
                                 <div className="grid grid-cols-12 gap-y-2">
                                     {messages.map(message => (
                                         <Message key={message.id} message={message.message} source={message.source}
