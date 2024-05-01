@@ -10,7 +10,7 @@ export default function Popup({id, title, text}: { id: string, title: string, te
             <input type="checkbox" id={id} className="modal-toggle"/>
             {/* @ts-ignore */}
             <label for={id} className="modal text-black">
-                <div className="modal-box relative max-w-none max-w-3xl">
+                <div className="modal-box max-w-3xl">
                     <h3 className="font-bold text-lg">Source</h3>
                     <p className="p-4">
                         <ol className="list">
