@@ -5,6 +5,8 @@ import {PineconeStore} from "@langchain/pinecone";
 import {ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate} from "@langchain/core/prompts";
 import {ConversationalRetrievalQAChain} from "langchain/chains";
 import {BufferMemory} from "langchain/memory";
+import {SqlMessageHistory} from "@/app/memories/sql.memory";
+import {getAuth} from "@clerk/nextjs/server";
 
 const pinecone = new Pinecone();
 
@@ -32,6 +34,12 @@ interface PostParams {
 
 export async function POST(request: NextRequest) {
     const {question} = (await request.json()) as PostParams;
+    const {userId} = getAuth(request);
+
+    if (!userId) {
+        return NextResponse.json({error: "Unauthorized"}, {status: 401});
+    }
+
     try {
         const vectorStore: PineconeStore = await PineconeStore.fromExistingIndex(
             new OpenAIEmbeddings(),
@@ -51,11 +59,12 @@ export async function POST(request: NextRequest) {
             returnMessages: true,
         })
 
+
         const chain = ConversationalRetrievalQAChain.fromLLM(
             model,
             vectorStore.asRetriever(),
             {
-                memory: bufferMemory,
+                memory: await SqlMessageHistory.GetSqlMemory({sessionId: userId}),
                 returnSourceDocuments: true,
                 qaChainOptions: {
                     prompt,
@@ -63,8 +72,10 @@ export async function POST(request: NextRequest) {
                 }
             },
         )
-        const response = await chain.invoke({question});
+        // const response = await chain.stream({question});
+        // return new StreamingTextResponse(response);
 
+        const response = await chain.invoke({question});
         return NextResponse.json({response: response});
     } catch (e: any) {
         return NextResponse.json({error: e.message}, {status: e.status ?? 500});

@@ -16,7 +16,7 @@ export default function Popup({id, title, text}: { id: string, title: string, te
                         <ol className="list">
                             {text.map(s => (
                                 <li className="py-5 flex flex-col" key={Date.now().toString()}>
-                                    <p className="grow">{`"${s}"`}</p>
+                                    <p className="grow">{s}</p>
                                     <p className="flex justify-end"><Link
                                         className="text-blue-500 pus"
                                         target="_blank"
