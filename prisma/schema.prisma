@@ -20,4 +20,5 @@ model Message {
   content      String
   role         String?
   name         String?
+  type         String
 }

@@ -28,7 +28,7 @@ export class SqlMessageHistory extends BaseChatMessageHistory {
         });
 
         const storedMessages = messages.map(message => ({
-            type: "message",
+            type: message.type,
             data: {
                 content: message.content,
                 name: message.name,
@@ -46,6 +46,7 @@ export class SqlMessageHistory extends BaseChatMessageHistory {
 
         await this.prisma.message.create({
             data: {
+                type: storedMessage.type,
                 sessionId: this.sessionId,
                 content: storedMessage.data.content,
                 name: storedMessage.data.name,
@@ -58,6 +59,7 @@ export class SqlMessageHistory extends BaseChatMessageHistory {
     async addUserMessage(message: string): Promise<void> {
         await this.prisma.message.create({
             data: {
+                type: "human",
                 sessionId: this.sessionId,
                 content: message,
                 name: "user",
@@ -69,6 +71,7 @@ export class SqlMessageHistory extends BaseChatMessageHistory {
     async addAIChatMessage(message: string): Promise<void> {
         await this.prisma.message.create({
             data: {
+                type: "ai",
                 sessionId: this.sessionId,
                 content: message,
                 name: "ai",
