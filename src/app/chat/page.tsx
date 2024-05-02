@@ -1,37 +1,41 @@
 'use client';
 
-import Link from "next/link";
-import {ancients} from "@/app/chat/ancients";
-
+import { ancients } from '@/app/chat/ancients';
+import Link from 'next/link';
 
 export default function Chat() {
-    return (
-        <section className="mx-auto pb-5 md:pb-20 lg:max-w-6xl max-md:mb-16 ">
-            <h1 className="text-3xl md:text-5xl font-bold text-center m-12">Choose your philosopher!</h1>
+  return (
+    <section className="mx-auto lg:max-w-6xl max-md:mb-16 ">
+      <h1 className=" text-3xl md:text-5xl font-bold text-center m-12">Choose your philosopher!</h1>
+      <div className="grid grid-cols-1 px-5 sm:grid-cols-2 md:grid-cols-3 gap-5 lg:grid-cols-4 justify-center justify-items-center">
+        {ancients.map(({ name, image, year, isEnabled }) => {
+          return (
             <div
-                className="grid sm:grid-cols-2 md:grid-cols-3 gap-5 lg:grid-cols-4 justify-center justify-items-center">
-                {ancients.map(({name, image, year, isEnabled}) => {
-                    return (
-                        <div key={name}
-                             className="card max-sm:card-side w-full md:w-64 bg-base-100 shadow-xl">
-                            <figure>
-                                <Link href={`/chat/${name}`}>
-                                    <img src={image} alt={name}
-                                         className='object-fill max-h-52 sm:max-h-full'/>
-                                </Link>
-                            </figure>
-                            <div className="card-body">
-                                <h2 className="card-title">{name}</h2>
-                                <p>{year}</p>
-                                <div className="card-actions justify-start sm:justify-end">
-                                    {isEnabled ?
-                                        <Link href={`/chat/${name}`} className="btn btn-primary">Chat now</Link> :
-                                        <p className='text-red-500'>Coming soon!</p>}
-                                </div>
-                            </div>
-                        </div>)
-                })}
+              key={name}
+              className="card max-sm:text-sm max-sm:card-side w-full max-sm:h-28 md:w-64 bg-base-100 shadow-xl"
+            >
+              <figure>
+                <Link href={`/chat/${name}`}>
+                  <img src={image} alt={name} className="object-fill max-sm:h-28 max-h-52 sm:max-h-full" />
+                </Link>
+              </figure>
+              <div className="sm:card-body max-sm:h-20 max-sm:p-2">
+                <h2 className=" card-title">{name}</h2>
+                <p>{year}</p>
+                <div className="card-actions justify-start sm:justify-end">
+                  {isEnabled ? (
+                    <Link href={`/chat/${name}`} className="btn btn-primary max-sm:h-8 max-sm:btn-ghost">
+                      Chat now
+                    </Link>
+                  ) : (
+                    <p className="text-red-500">Coming soon!</p>
+                  )}
+                </div>
+              </div>
             </div>
-        </section>
-    );
+          );
+        })}
+      </div>
+    </section>
+  );
 }
