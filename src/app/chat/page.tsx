@@ -19,16 +19,19 @@ export default function Chat() {
                   <img src={image} alt={name} className="object-fill max-sm:h-28 max-h-52 sm:max-h-full" />
                 </Link>
               </figure>
-              <div className="sm:card-body max-sm:h-20 max-sm:p-2">
-                <h2 className=" card-title">{name}</h2>
-                <p>{year}</p>
-                <div className="card-actions justify-start sm:justify-end">
+              <div className="flex-1 max-sm:h-20 min-h-32">
+                <div className="flex flex-col p-3 w-200px">
+                  <h2 className=" card-title">{name}</h2>
+                  <p>{year}</p>
+                  <div className="card-actions">{isEnabled ? '' : <p className="text-red-500">Coming soon!</p>}</div>
                   {isEnabled ? (
-                    <Link href={`/chat/${name}`} className="btn btn-primary max-sm:h-8 max-sm:btn-ghost">
-                      Chat now
-                    </Link>
+                    <div className="text-right">
+                      <Link href={`/chat/${name}`} className="btn btn-primary max-sm:h-8 max-sm:btn-ghost">
+                        Chat now
+                      </Link>
+                    </div>
                   ) : (
-                    <p className="text-red-500">Coming soon!</p>
+                    ''
                   )}
                 </div>
               </div>
