@@ -4,12 +4,12 @@ import Message, { MessageProps } from '@/app/chat/[name]/message';
 import { ancients } from '@/app/chat/ancients';
 import { PaperAirplaneIcon } from '@heroicons/react/16/solid';
 import { redirect } from 'next/navigation';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import './style.css';
 
 export default function ChatWith({ params: { name } }: { params: { name: string } }) {
   const [messages, setMessages] = useState<MessageProps[]>([]);
-  const inputRef = useRef(null);
+  const inputRef = useRef<null | HTMLDivElement>(null);
   const ancient = ancients.find((ancient) => ancient.name.toLowerCase() === name.toLowerCase()) ?? {
     name: 'Unknown',
     image: '/ancients/unknown.jpeg',
@@ -20,6 +20,12 @@ export default function ChatWith({ params: { name } }: { params: { name: string 
   if (!ancient.isEnabled) {
     redirect('/chat');
   }
+
+  useEffect(() => {
+    if (inputRef.current != null && inputRef.current.scrollIntoView != null) {
+      inputRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, []);
 
   const askAncient = async (question: MessageProps) => {
     const response = await fetch('/api/chat', {
