@@ -10,7 +10,7 @@ export interface MessageProps {
 
 export default function Message({ message, id, user, source, direction }: MessageProps) {
   let chatDirection = 'chat-start';
-  let chatBg = 'bg-white text-gray-800';
+  let chatBg = 'bg-white dark:bg-gray-500 dark:text-gray-300 text-gray-600';
   if (direction === 'outgoing') {
     chatDirection = 'chat-end';
     chatBg = '';
