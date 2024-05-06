@@ -9,7 +9,7 @@ import './style.css';
 
 export default function ChatWith({ params: { name } }: { params: { name: string } }) {
   const [messages, setMessages] = useState<MessageProps[]>([]);
-  const inputRef = useRef<null | HTMLDivElement>(null);
+  const inputRef = useRef(null);
   const ancient = ancients.find((ancient) => ancient.name.toLowerCase() === name.toLowerCase()) ?? {
     name: 'Unknown',
     image: '/ancients/unknown.jpeg',
@@ -22,12 +22,16 @@ export default function ChatWith({ params: { name } }: { params: { name: string 
   }
 
   useEffect(() => {
-    if (inputRef.current != null && inputRef.current.scrollIntoView != null) {
-      inputRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (inputRef.current != null && (inputRef.current as HTMLInputElement).scrollIntoView != null) {
+      (inputRef.current as HTMLInputElement).scrollIntoView({ behavior: 'smooth' });
     }
   }, []);
 
   const askAncient = async (question: MessageProps) => {
+    if (!question.message) {
+      return;
+    }
+
     const response = await fetch('/api/chat', {
       method: 'POST',
       body: JSON.stringify({
@@ -86,19 +90,19 @@ export default function ChatWith({ params: { name } }: { params: { name: string 
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
-                if (inputRef.current != null && inputRef.current['value'] != null) {
-                  const q = inputRef.current['value'];
 
+                const q = inputRef.current?.['value'];
+                if (q) {
                   const userMessage: MessageProps = {
                     id: Date.now().toString(),
                     direction: 'outgoing',
-                    message: inputRef.current['value'],
+                    message: q,
                     user: 'me',
                   };
 
                   setMessages([...messages, userMessage]);
 
-                  inputRef.current['value'] = '' as never;
+                  inputRef.current && (inputRef.current['value'] = null as never);
 
                   await askAncient(userMessage);
                 }
