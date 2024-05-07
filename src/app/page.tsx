@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export default function Home() {
   return (
-    <section className="bg-base flex-1">
+    <section className="bg-base flex-1 h-full">
       <div className="hero h-full">
         <div className="hero-content flex-col lg:flex-row-reverse">
           <Image
