@@ -36,8 +36,6 @@ export default function ChatWith({ params: { name } }: { params: { name: string 
       method: 'POST',
       body: JSON.stringify({
         question: question.message,
-        // messages.filter(message => message.direction === 'outgoing')
-        // .map(message => message.message)
       }),
     });
 

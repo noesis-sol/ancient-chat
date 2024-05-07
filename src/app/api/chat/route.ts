@@ -5,7 +5,6 @@ import { ChatOpenAI, OpenAIEmbeddings } from '@langchain/openai';
 import { PineconeStore } from '@langchain/pinecone';
 import { Pinecone } from '@pinecone-database/pinecone';
 import { ConversationalRetrievalQAChain } from 'langchain/chains';
-import { BufferMemory } from 'langchain/memory';
 import { NextRequest, NextResponse } from 'next/server';
 
 const pinecone = new Pinecone();
@@ -53,13 +52,6 @@ export async function POST(request: NextRequest) {
       temperature: 0.2,
     });
 
-    const bufferMemory = new BufferMemory({
-      memoryKey: 'chat_history', // Must be set to "chat_history"
-      inputKey: 'question',
-      outputKey: 'text',
-      returnMessages: true,
-    });
-
     const chain = ConversationalRetrievalQAChain.fromLLM(model, vectorStore.asRetriever(), {
       memory: await SqlMessageHistory.GetSqlMemory({ sessionId: userId }),
       returnSourceDocuments: true,
@@ -68,8 +60,6 @@ export async function POST(request: NextRequest) {
         type: 'stuff',
       },
     });
-    // const response = await chain.stream({question});
-    // return new StreamingTextResponse(response);
 
     const response = await chain.invoke({ question });
     return NextResponse.json({ response: response });
