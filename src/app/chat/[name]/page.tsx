@@ -59,8 +59,8 @@ export default function ChatWith({ params: { name } }: { params: { name: string 
   };
 
   return (
-    <div className="flex h-[calc(100vh-120px)]  antialiased">
-      <div className="flex flex-row h-full w-full overflow-x-hidden">
+    <div className="flex-1 antialiased w-full">
+      <div className="flex flex-row h-full overflow-x-hidden">
         <div className="invisible w-0 md:w-64 md:m-6 md:visible card card-compact max-h-96 bg-base-100 shadow-xl flex-none">
           <figure>
             <img src={ancient.image} alt={ancient.name} />

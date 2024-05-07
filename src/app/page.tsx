@@ -3,12 +3,12 @@ import Link from 'next/link';
 
 export default function Home() {
   return (
-    <section className="bg-white dark:bg-[#0b1727] dark:text-white relative z-10 overflow-hidden">
-      <div className="hero min-h-[calc(100vh-120px)] bg-base-200">
+    <section className="bg-base flex-1">
+      <div className="hero h-full">
         <div className="hero-content flex-col lg:flex-row-reverse">
           <Image
-            width={176}
-            height={176}
+            width={148}
+            height={148}
             alt="AGRs logo"
             src="https://yt3.googleusercontent.com/4eUXHkAB-XSqTDzKwvWHmQgZ2njUkqbqoXRIi9kHayq_ssr_8zqw5HMfDMQjSw-Fx8wXPLWAfbM=s176-c-k-c0x00ffffff-no-rj"
             className="max-w-sm rounded-lg shadow-2xl"

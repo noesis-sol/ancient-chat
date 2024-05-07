@@ -36,7 +36,7 @@ export default function RootLayout({
       <html lang="en" className={lemonMilkFont.className}>
         <body className="flex flex-col">
           <Navbar />
-          <main className="flex-grow h-auto py-14">{children}</main>
+          <main className="flex flex-grow min-h-[calc(100dvh-120px)]">{children}</main>
           <Footer />
         </body>
       </html>
