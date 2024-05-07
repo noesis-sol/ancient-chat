@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="flex-none h-14 footer p-4 bg-black text-white">
+    <footer className="h-14 footer p-4 bg-black text-white flex-shrink-0">
       <div className="flex flex-row w-full justify-between">
         <aside className="items-center grid-flow-col">
           <p>AGR - All right reserved</p>

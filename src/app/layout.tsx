@@ -34,10 +34,12 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" className={lemonMilkFont.className}>
-        <body className="flex flex-col">
-          <Navbar />
-          <main className="flex flex-grow min-h-[calc(100dvh-120px)]">{children}</main>
-          <Footer />
+        <body>
+          <div className="flex flex-col h-full w-full">
+            <Navbar />
+            <main className="flex-1 overflow-auto min-h-[calc(100dvh-120px)]">{children}</main>
+            <Footer />
+          </div>
         </body>
       </html>
     </ClerkProvider>

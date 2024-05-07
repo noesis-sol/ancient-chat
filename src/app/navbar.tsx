@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 export default function Navbar() {
   return (
-    <header className="navbar flex-none bg-black text-white h-16 w-full">
+    <header className="navbar bg-black text-white h-16 w-full">
       <div className="flex flex-1 justify-between">
         <Link href="/chat" className="btn btn-ghost text-xl">
           <Image
