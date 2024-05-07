@@ -4,15 +4,15 @@ export default function Popup({ id, title, text }: { id: string; title: string; 
   return (
     <>
       {/* @ts-ignore */}
-      <label for={id} className="btn btn-link min-h-0 h-auto">
+      <label htmlFor={id} className="btn btn-link min-h-0 h-auto">
         {title}
       </label>
       <input type="checkbox" id={id} className="modal-toggle" />
       {/* @ts-ignore */}
-      <label for={id} className="modal">
+      <label htmlFor={id} className="modal">
         <div className="modal-box max-w-3xl text-base-content">
           <h3 className="font-bold text-lg">Source</h3>
-          <p className="p-4">
+          <div className="p-4">
             <ol className="list">
               {text.map((s) => (
                 <li className="py-5 flex flex-col" key={Date.now().toString()}>
@@ -29,7 +29,7 @@ export default function Popup({ id, title, text }: { id: string; title: string; 
                 </li>
               ))}
             </ol>
-          </p>
+          </div>
         </div>
       </label>
     </>

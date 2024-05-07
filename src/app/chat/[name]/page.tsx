@@ -1,6 +1,6 @@
 'use client';
 
-import Message, { MessageProps } from '@/app/chat/[name]/message';
+import Message, { MessageProps, uuidv4 } from '@/app/chat/[name]/message';
 import { ancients } from '@/app/chat/ancients';
 import { PaperAirplaneIcon } from '@heroicons/react/16/solid';
 import { redirect } from 'next/navigation';
@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import './style.css';
 
 export default function ChatWith({ params: { name } }: { params: { name: string } }) {
+  const [sessionId, setSessionId] = useState(uuidv4());
   const [messages, setMessages] = useState<MessageProps[]>([]);
   const inputRef = useRef(null);
   const ancient = ancients.find((ancient) => ancient.name.toLowerCase() === name.toLowerCase()) ?? {
@@ -36,6 +37,7 @@ export default function ChatWith({ params: { name } }: { params: { name: string 
       method: 'POST',
       body: JSON.stringify({
         question: question.message,
+        sessionId,
       }),
     });
 
@@ -47,7 +49,7 @@ export default function ChatWith({ params: { name } }: { params: { name: string 
       ...messages,
       question,
       {
-        id: Date.now().toString(),
+        id: uuidv4(),
         direction: 'incoming',
         message: data.text,
         source,

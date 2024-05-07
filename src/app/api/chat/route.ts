@@ -13,6 +13,7 @@ const pineconeIndex = pinecone.Index(process.env.PINECONE_INDEX!);
 
 interface PostParams {
   question: string;
+  sessionId: string;
 }
 
 const getPrompt = (userName: string) => {
@@ -36,7 +37,7 @@ const getPrompt = (userName: string) => {
 };
 
 export async function POST(request: NextRequest) {
-  const { question } = (await request.json()) as PostParams;
+  const { question, sessionId } = (await request.json()) as PostParams;
   const { userId } = getAuth(request);
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -53,7 +54,7 @@ export async function POST(request: NextRequest) {
     });
 
     const chain = ConversationalRetrievalQAChain.fromLLM(model, vectorStore.asRetriever(), {
-      memory: await SqlMessageHistory.GetSqlMemory({ sessionId: userId }),
+      memory: await SqlMessageHistory.GetSqlMemory({ sessionId }),
       returnSourceDocuments: true,
       qaChainOptions: {
         prompt,
