@@ -68,7 +68,7 @@ export default function ChatWith({ params: { name } }: { params: { name: string 
         </div>
       </div>
       <div className="grow flex-col h-full sm:p-6 md:pl-0 chat-box text-lg">
-        <div className="flex flex-col flex-auto flex-shrink-0 rounded-2xl h-full p-4 bg-base-200">
+        <div className="flex flex-col flex-auto flex-shrink-0 sm:rounded-2xl h-full p-4 bg-base-200">
           <div className="flex flex-col h-full overflow-x-auto mb-4">
             <div className="flex flex-col-reverse h-full overflow-x-auto">
               <div className="grid grid-cols-12 gap-y-2">
@@ -104,12 +104,12 @@ export default function ChatWith({ params: { name } }: { params: { name: string 
                 await askAncient(userMessage);
               }
             }}
-            className="flex flex-row items-center h-16 rounded-xl w-full p-4"
+            className="flex flex-row items-center h-16 rounded-xl w-full"
           >
-            <div className="items-center gap-2 flex-grow">
+            <div className="items-center flex-grow">
               <input ref={inputRef} type="text" placeholder="Type here" className="input input-bordered w-full" />
             </div>
-            <div className="ml-4">
+            <div className="ml-2">
               <button className="btn btn-primary">
                 <span>Send</span>
                 <PaperAirplaneIcon className="h-5"></PaperAirplaneIcon>
