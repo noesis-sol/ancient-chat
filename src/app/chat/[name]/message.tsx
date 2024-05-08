@@ -6,6 +6,7 @@ export interface MessageProps {
   user?: string;
   source?: [string];
   direction: 'incoming' | 'outgoing';
+  isLoading?: boolean;
 }
 
 export function uuidv4() {
@@ -16,7 +17,7 @@ export function uuidv4() {
   });
 }
 
-export default function Message({ message, id, user, source, direction }: MessageProps) {
+export default function Message({ message, id, user, source, direction, isLoading }: MessageProps) {
   let chatDirection = 'chat-start';
   let chatBg = 'bg-white dark:bg-gray-500 dark:text-gray-300 text-gray-600';
   if (direction === 'outgoing') {
@@ -27,8 +28,9 @@ export default function Message({ message, id, user, source, direction }: Messag
   return (
     <div className="col-start-1 col-end-13">
       <div className={`chat ${chatDirection}`}>
-        <div className={`chat-bubble ${chatBg}`}>
-          {message} {source ? <Popup id={id ?? Date.now().toString()} text={source} title="view source" /> : null}
+        <div className={`chat-bubble ${chatBg} ${isLoading ? 'pb-0' : ''}`}>
+          {isLoading ? <span className="loading loading-dots loading-md"></span> : message}{' '}
+          {source ? <Popup id={id ?? Date.now().toString()} text={source} title="view source" /> : null}
         </div>
       </div>
     </div>

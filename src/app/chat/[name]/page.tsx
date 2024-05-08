@@ -81,6 +81,7 @@ export default function ChatWith({ params: { name } }: { params: { name: string 
                     source={message.source}
                     id={message.id}
                     direction={message.direction}
+                    isLoading={message.isLoading}
                   />
                 ))}
               </div>
@@ -99,7 +100,11 @@ export default function ChatWith({ params: { name } }: { params: { name: string 
                   user: 'me',
                 };
 
-                setMessages([...messages, userMessage]);
+                setMessages([
+                  ...messages,
+                  userMessage,
+                  { id: Date.now().toString(), direction: 'incoming', isLoading: true } as MessageProps,
+                ]);
 
                 inputRef.current && (inputRef.current['value'] = null as never);
 
