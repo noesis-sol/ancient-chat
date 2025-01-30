@@ -1,7 +1,7 @@
 import {redirect} from "next/navigation";
 import {currentUser} from "@clerk/nextjs/server";
-import {Pinecone} from "@pinecone-database/pinecone";
-import AccordionSection, {AccordionItem} from "@/components/accordion";
+import {IndexList, Pinecone} from "@pinecone-database/pinecone";
+import AccordionSection from "@/components/accordion";
 
 const pinecone = new Pinecone();
 
@@ -15,18 +15,17 @@ export default async function AdminPage() {
     }
 
     //get all indexes from pinecone
-    const {indexes}: { indexes: any[] } = await pinecone.listIndexes();
+    const {indexes}: IndexList = await pinecone.listIndexes();
 
-    const myAccordionData = indexes.map((index) => {
+    const myAccordionData = indexes?.map((index) => {
         return {
             title: index.name,
             content: index.host
         };
-    });
+    }) ?? [];
 
     return (
-        <div>
-            <h1>Indexes</h1>
+        <div className={'pt-5'}>
             <AccordionSection accordionData={myAccordionData}/>
         </div>
     );
