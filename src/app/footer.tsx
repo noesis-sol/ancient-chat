@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="h-10 footer p-2 bg-black text-white flex-shrink-0">
+    <footer className="h-10 footer p-2 bg-black text-white shrink-0">
       <div className="flex flex-row w-full justify-between">
         <aside className="items-center grid-flow-col">
           <p>AGR - All right reserved</p>
