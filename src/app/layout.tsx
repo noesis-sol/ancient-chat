@@ -10,7 +10,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Talk with the Ancients',
-  description: 'A place to talk with the ancients',
+  description: 'A place to talk with the ancients'
 };
 
 const lemonMilkFont = localFont({
@@ -22,22 +22,22 @@ const lemonMilkFont = localFont({
     { path: '../fonts/lemon-milk/LEMONMILK-Light.otf', weight: '300', style: 'light' },
     { path: '../fonts/lemon-milk/LEMONMILK-LightItalic.otf', weight: '300', style: 'italic' },
     { path: '../fonts/lemon-milk/LEMONMILK-Medium.otf', weight: '500', style: 'medium' },
-    { path: '../fonts/lemon-milk/LEMONMILK-MediumItalic.otf', weight: '500', style: 'italic' },
+    { path: '../fonts/lemon-milk/LEMONMILK-MediumItalic.otf', weight: '500', style: 'italic' }
   ],
-  variable: '--font-lemon-milk',
+  variable: '--font-lemon-milk'
 });
 export default function RootLayout({
-  children,
+  children
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en" className={lemonMilkFont.className}>
+      <html lang='en' className={lemonMilkFont.className}>
         <body>
-          <div className="flex flex-col h-full w-full">
+          <div className='flex flex-col h-full w-full'>
             <Navbar />
-            <main className="flex-1 overflow-auto min-h-[calc(100dvh-120px)]">{children}</main>
+            <main className='flex-1 overflow-auto min-h-[calc(100dvh-120px)]'>{children}</main>
             <Footer />
           </div>
         </body>
