@@ -1,11 +1,11 @@
-import {SqlMessageHistory} from '@/app/memories/sql.memory';
-import {currentUser, getAuth} from '@clerk/nextjs/server';
-import {ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate} from '@langchain/core/prompts';
-import {ChatOpenAI, OpenAIEmbeddings} from '@langchain/openai';
-import {PineconeStore} from '@langchain/pinecone';
-import {Pinecone} from '@pinecone-database/pinecone';
-import {ConversationalRetrievalQAChain} from 'langchain/chains';
-import {NextRequest, NextResponse} from 'next/server';
+import { SqlMessageHistory } from '@/app/memories/sql.memory';
+import { currentUser, getAuth } from '@clerk/nextjs/server';
+import { ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate } from '@langchain/core/prompts';
+import { ChatOpenAI, OpenAIEmbeddings } from '@langchain/openai';
+import { PineconeStore } from '@langchain/pinecone';
+import { Pinecone } from '@pinecone-database/pinecone';
+import { ConversationalRetrievalQAChain } from 'langchain/chains';
+import { NextRequest, NextResponse } from 'next/server';
 
 const pinecone = new Pinecone();
 
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
         const prompt = getPrompt(user?.firstName ?? 'User');
 
         const model = new ChatOpenAI({
-            modelName: 'gpt-3.5-turbo-1106',
+            model: 'gpt-4o-mini',
             temperature: 0.2,
         });
 
