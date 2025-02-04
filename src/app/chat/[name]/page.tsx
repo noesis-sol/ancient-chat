@@ -42,9 +42,11 @@ export default function ChatWith({ params }: { params: Promise<{ name: string }>
       })
     });
 
-    const { response: data } = await response.json();
+    const {
+      response: { answer, context }
+    } = await response.json();
 
-    const source = data.sourceDocuments?.map((doc: { pageContent: string }) => doc.pageContent);
+    const source = context?.map((doc: { pageContent: string }) => doc.pageContent);
 
     setMessages([
       ...messages,
@@ -52,7 +54,7 @@ export default function ChatWith({ params }: { params: Promise<{ name: string }>
       {
         id: uuidv4(),
         direction: 'incoming',
-        message: data.text,
+        message: answer,
         source,
         user: 'me'
       }
