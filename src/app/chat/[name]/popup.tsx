@@ -1,7 +1,11 @@
 import { uuidv4 } from '@/app/chat/[name]/message';
 import Link from 'next/link';
 
-export default function Popup({ id, title, text }: { id: string; title: string; text: [string] }) {
+export default function Popup({ id, title, text }: { id: string; title: string; text: [string] | string }) {
+  if (!Array.isArray(text)) {
+    text = [text];
+  }
+
   return (
     <>
       {/* @ts-ignore */}

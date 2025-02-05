@@ -4,7 +4,7 @@ export interface MessageProps {
   id?: string;
   message: string;
   user?: string;
-  source?: [string];
+  source?: [string] | string;
   direction: 'incoming' | 'outgoing';
   isLoading?: boolean;
 }
@@ -30,7 +30,7 @@ export default function Message({ message, id, user, source, direction, isLoadin
       <div className={`chat ${chatDirection}`}>
         <div className={`chat-bubble ${chatBg} ${isLoading ? 'pb-0' : ''}`}>
           {isLoading ? <span className='loading loading-dots loading-md'></span> : message}{' '}
-          {source ? <Popup id={id ?? uuidv4()} text={source} title='view source' /> : null}
+          {source && source.length ? <Popup id={id ?? uuidv4()} text={source} title='view source' /> : null}
         </div>
       </div>
     </div>

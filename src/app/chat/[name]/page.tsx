@@ -1,8 +1,9 @@
 'use client';
 
-import Message, { MessageProps, uuidv4 } from '@/app/chat/[name]/message';
+import Message from '@/app/chat/[name]/message';
 import { ancients } from '@/app/chat/ancients';
 import { PaperAirplaneIcon } from '@heroicons/react/16/solid';
+import { Message as AiMessage, useChat } from 'ai/react';
 import { redirect } from 'next/navigation';
 import React, { useEffect, useRef, useState } from 'react';
 import './style.css';
@@ -10,7 +11,6 @@ import './style.css';
 export default function ChatWith({ params }: { params: Promise<{ name: string }> }) {
   const { name } = React.use(params);
 
-  const [messages, setMessages] = useState<MessageProps[]>([]);
   const inputRef = useRef(null);
   const ancient = ancients.find((ancient) => ancient.name.toLowerCase() === name.toLowerCase()) ?? {
     name: 'Unknown',
@@ -29,36 +29,16 @@ export default function ChatWith({ params }: { params: Promise<{ name: string }>
     }
   }, []);
 
-  const askAncient = async (question: MessageProps) => {
-    if (!question.message) {
-      return;
+  const [isThinking, setIsThinking] = useState(false);
+  const { messages, input, handleInputChange, handleSubmit } = useChat({
+    onResponse: () => {
+      setIsThinking(false);
     }
+  });
 
-    const response = await fetch('/api/chat', {
-      method: 'POST',
-      body: JSON.stringify({
-        question: question.message,
-        sessionId: uuidv4()
-      })
-    });
-
-    const {
-      response: { answer, context }
-    } = await response.json();
-
-    const source = context?.map((doc: { pageContent: string }) => doc.pageContent);
-
-    setMessages([
-      ...messages,
-      question,
-      {
-        id: uuidv4(),
-        direction: 'incoming',
-        message: answer,
-        source,
-        user: 'me'
-      }
-    ]);
+  const handleChatSubmit = (e: React.FormEvent) => {
+    setIsThinking(true);
+    handleSubmit(e);
   };
 
   return (
@@ -77,51 +57,30 @@ export default function ChatWith({ params }: { params: Promise<{ name: string }>
           <div className='flex flex-col h-full overflow-x-auto mb-4'>
             <div className='flex flex-col-reverse h-full overflow-x-auto'>
               <div className='grid grid-cols-12 gap-y-2'>
-                {messages.map((message) => (
+                {messages.map((message: AiMessage) => (
                   <Message
                     key={message.id}
-                    message={message.message}
-                    source={message.source}
+                    message={message.content}
+                    source={message.role === 'user' ? undefined : message.reasoning}
                     id={message.id}
-                    direction={message.direction}
-                    isLoading={message.isLoading}
+                    direction={message.role === 'user' ? 'outgoing' : 'incoming'}
+                    isLoading={false}
                   />
                 ))}
+                {isThinking ? <Message key='loading' message='...' direction='incoming' isLoading={true} /> : null}
               </div>
             </div>
           </div>
-          <form
-            onSubmit={async (e) => {
-              e.preventDefault();
-
-              const q = inputRef.current?.['value'];
-              if (q) {
-                const userMessage: MessageProps = {
-                  id: uuidv4(),
-                  direction: 'outgoing',
-                  message: q,
-                  user: 'me'
-                };
-
-                setMessages([
-                  ...messages,
-                  userMessage,
-                  {
-                    id: uuidv4(),
-                    direction: 'incoming',
-                    isLoading: true
-                  } as MessageProps
-                ]);
-
-                inputRef.current && (inputRef.current['value'] = null as never);
-
-                await askAncient(userMessage);
-              }
-            }}
-            className='flex flex-row items-center h-16 rounded-xl w-full'
-          >
+          <form onSubmit={handleChatSubmit} className='flex flex-row items-center h-16 rounded-xl w-full'>
             <div className='items-center grow'>
-              <input ref={inputRef} type='text' placeholder='Type here' className='input input-bordered w-full' />
+              <input
+                ref={inputRef}
+                type='text'
+                placeholder='Type here'
+                className='input input-bordered w-full'
+                value={input}
+                onChange={handleInputChange}
+              />
             </div>
             <div className='ml-2'>
               <button className='btn btn-primary'>
