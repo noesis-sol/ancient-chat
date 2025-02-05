@@ -1,6 +1,6 @@
 'use client';
 
-import { ancients } from '@/app/chat/ancients';
+import { ancients } from '@/app/(main)/chat/ancients';
 import Link from 'next/link';
 
 export default function Chat() {

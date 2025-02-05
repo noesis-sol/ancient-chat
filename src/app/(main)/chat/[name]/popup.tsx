@@ -1,4 +1,4 @@
-import { uuidv4 } from '@/app/chat/[name]/message';
+import { uuidv4 } from '@/app/(main)/chat/[name]/message';
 import Link from 'next/link';
 
 export default function Popup({ id, title, text }: { id: string; title: string; text: [string] | string }) {

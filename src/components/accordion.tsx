@@ -22,12 +22,12 @@ const AccordionSection = ({ accordionData }: AccordionSectionProps) => {
   }
 
   return (
-    <div className='w-full max-w-2xl mx-auto space-y-2'>
+    <div className='w-full mx-auto space-y-2'>
       {accordionData.map((section, index) => (
         <div key={index} className='border rounded-lg overflow-hidden'>
           <button
             onClick={() => toggleSection(index)}
-            className='w-full p-4 text-left bg-white hover:bg-gray-50 flex justify-between items-center'
+            className='w-full p-4 text-left flex justify-between items-center'
           >
             <span className='font-medium'>{section.title}</span>
             <svg
@@ -46,7 +46,7 @@ const AccordionSection = ({ accordionData }: AccordionSectionProps) => {
               openSection === index ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0'
             } overflow-hidden`}
           >
-            <div className='p-4 bg-gray-50'>{section.content}</div>
+            <div className='p-4'>{section.content}</div>
           </div>
         </div>
       ))}

@@ -33,8 +33,10 @@ export default async function AdminPage() {
     }) ?? [];
 
   return (
-    <div className={'pt-5'}>
-      <IndexUploadModal />
+    <div className='pt-5 flex flex-col gap-4 min-w-[90%]'>
+      <div className='flex justify-end'>
+        <IndexUploadModal />
+      </div>
       <AccordionSection accordionData={myAccordionData} />
     </div>
   );

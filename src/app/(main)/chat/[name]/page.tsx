@@ -1,7 +1,7 @@
 'use client';
 
-import Message from '@/app/chat/[name]/message';
-import { ancients } from '@/app/chat/ancients';
+import Message from '@/app/(main)/chat/[name]/message';
+import { ancients } from '@/app/(main)/chat/ancients';
 import { PaperAirplaneIcon } from '@heroicons/react/16/solid';
 import { Message as AiMessage, useChat } from 'ai/react';
 import { redirect } from 'next/navigation';

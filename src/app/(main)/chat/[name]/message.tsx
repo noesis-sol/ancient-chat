@@ -1,4 +1,4 @@
-import Popup from '@/app/chat/[name]/popup';
+import Popup from '@/app/(main)/chat/[name]/popup';
 
 export interface MessageProps {
   id?: string;
