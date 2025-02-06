@@ -29,3 +29,7 @@ export async function queryPineconeContext(question: string) {
 
   return results.matches?.map((match) => match.metadata?.text) || [];
 }
+
+export async function deleteIndex(indexName: string) {
+  await pinecone.deleteIndex(indexName);
+}

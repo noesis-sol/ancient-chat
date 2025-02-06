@@ -22,7 +22,7 @@ export default async function AdminPage() {
   }
 
   //get all indexes from pinecone
-  const { indexes }: IndexList = await pinecone.listIndexes();
+  let { indexes }: IndexList = await pinecone.listIndexes();
 
   const myAccordionData =
     indexes?.map((index) => {
@@ -31,6 +31,11 @@ export default async function AdminPage() {
         content: index.host
       };
     }) ?? [];
+
+  const deleteIndex = async (indexName: string) => {
+    await pinecone.deleteIndex(indexName);
+    ({ indexes } = await pinecone.listIndexes());
+  };
 
   return (
     <div className='pt-5 flex flex-col gap-4 min-w-[90%]'>
