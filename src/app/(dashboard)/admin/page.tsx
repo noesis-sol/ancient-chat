@@ -32,17 +32,12 @@ export default async function AdminPage() {
       };
     }) ?? [];
 
-  const deleteIndex = async (indexName: string) => {
-    await pinecone.deleteIndex(indexName);
-    ({ indexes } = await pinecone.listIndexes());
-  };
-
   return (
     <div className='pt-5 flex flex-col gap-4 min-w-[90%]'>
       <div className='flex justify-end'>
         <IndexUploadModal />
       </div>
-      <AccordionSection accordionData={myAccordionData} />
+      <AccordionSection data={myAccordionData} />
     </div>
   );
 }

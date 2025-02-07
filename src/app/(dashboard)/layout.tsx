@@ -33,7 +33,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <div>
                   <ul className='menu w-80 p-4 text-base-content space-y-1'>
                     <li>
-                      <a href='/admin'>Admin</a>
+                      <a href='/admin'>Indexes</a>
                     </li>
                   </ul>
                 </div>
