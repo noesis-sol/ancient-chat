@@ -70,11 +70,12 @@ const AccordionSection = ({ data }: AccordionSectionProps) => {
                 openSection === index ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0'
               } overflow-hidden`}
             >
-              <div className='p-4'>{section.content}</div>
-
-              <button onClick={() => setDeleteTitle(section.title)} className='ml-4 p-2 mb-2 btn btn-outline btn-error'>
-                Delete
-              </button>
+              <div className='p-4 flex justify-between items-center'>
+                <div>{section.content}</div>
+                <button onClick={() => setDeleteTitle(section.title)} className='btn btn-outline btn-error'>
+                  Delete
+                </button>
+              </div>
             </div>
           </div>
         ))}
