@@ -4,6 +4,7 @@ import { useState } from 'react';
 export type AccordionItem = {
   title: string;
   content: string;
+  isActive: boolean;
 };
 
 interface AccordionSectionProps {
@@ -44,27 +45,60 @@ const AccordionSection = ({ data }: AccordionSectionProps) => {
     }
   };
 
+  const toggleActive = async (title: string, currentState: boolean) => {
+    try {
+      // const result = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/indexes/${title}/toggle`, {
+      //   method: 'PATCH',
+      //   headers: {
+      //     'Content-Type': 'application/json'
+      //   },
+      //   body: JSON.stringify({ isActive: !currentState })
+      // });
+
+      // const { success } = await result.json();
+      const success = true;
+      if (success) {
+        setAccordionData((prev) =>
+          prev.map((item) => (item.title === title ? { ...item, isActive: !item.isActive } : item))
+        );
+      }
+    } catch (error) {
+      console.error('Failed to toggle active state:', error);
+    }
+  };
+
   return (
     <>
       <div className='w-full mx-auto space-y-2'>
         {accordionData.map((section, index) => (
           <div key={index} className='border rounded-lg overflow-hidden'>
-            <button
-              onClick={() => toggleSection(index)}
-              className='w-full p-4 text-left flex justify-between items-center'
-            >
+            <div className='flex justify-between items-center p-4'>
               <span className='font-medium'>{section.title}</span>
-              <svg
-                className={`w-5 h-5 transition-transform duration-200 ${
-                  openSection === index ? 'transform rotate-180' : ''
-                }`}
-                fill='none'
-                viewBox='0 0 24 24'
-                stroke='currentColor'
-              >
-                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 9l-7 7-7-7' />
-              </svg>
-            </button>
+
+              <div className='flex items-center'>
+                <input
+                  type='checkbox'
+                  checked={!!section.isActive}
+                  onChange={() => toggleActive(section.title, section.isActive)}
+                  className='toggle checked:bg-orange-400 checked:text-orange-800 checked:border-orange-500 '
+                />
+                <button
+                  onClick={() => toggleSection(index)}
+                  className='w-full p-4 text-left flex justify-between items-center hover:cursor-pointer'
+                >
+                  <svg
+                    className={`w-5 h-5 transition-transform duration-200 ${
+                      openSection === index ? 'transform rotate-180' : ''
+                    }`}
+                    fill='none'
+                    viewBox='0 0 24 24'
+                    stroke='currentColor'
+                  >
+                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 9l-7 7-7-7' />
+                  </svg>
+                </button>
+              </div>
+            </div>
             <div
               className={`transition-all duration-200 ease-in-out ${
                 openSection === index ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0'
