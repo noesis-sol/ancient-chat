@@ -18,6 +18,7 @@ const AccordionSection = ({ data }: AccordionSectionProps) => {
   const [deleteTitle, setDeleteTitle] = useState<string | null>(null);
   const [accordionData, setAccordionData] = useState<AccordionItem[]>(data);
   const [weights, setWeights] = useState<{ [key: string]: number }>({});
+  const [loadingToggles, setLoadingToggles] = useState<{ [key: string]: boolean }>({});
 
   const toggleSection = (index: number) => {
     setOpenSection(openSection === index ? null : index);
@@ -49,6 +50,8 @@ const AccordionSection = ({ data }: AccordionSectionProps) => {
   };
 
   const toggleActive = async (title: string, currentState: boolean) => {
+    setLoadingToggles((prev) => ({ ...prev, [title]: true }));
+
     try {
       const result = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/indexes/${title}/toggle`, {
         method: 'PATCH',
@@ -66,6 +69,8 @@ const AccordionSection = ({ data }: AccordionSectionProps) => {
       }
     } catch (error) {
       console.error('Failed to toggle active state:', error);
+    } finally {
+      setLoadingToggles((prev) => ({ ...prev, [title]: false }));
     }
   };
 
@@ -131,12 +136,22 @@ const AccordionSection = ({ data }: AccordionSectionProps) => {
               <span className='font-medium'>{section.title}</span>
 
               <div className='flex items-center gap-4'>
-                <input
-                  type='checkbox'
-                  checked={!!section.isActive}
-                  onChange={() => toggleActive(section.title, section.isActive)}
-                  className='toggle checked:bg-primary'
-                />
+                <div className='relative'>
+                  <input
+                    type='checkbox'
+                    checked={!!section.isActive}
+                    onChange={() => toggleActive(section.title, section.isActive)}
+                    disabled={loadingToggles[section.title]}
+                    className={`toggle checked:bg-primary ${
+                      loadingToggles[section.title] ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                  />
+                  {loadingToggles[section.title] && (
+                    <div className='absolute inset-0 flex items-center justify-center'>
+                      <div className='w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin'></div>
+                    </div>
+                  )}
+                </div>
                 <button
                   onClick={() => toggleSection(index)}
                   className='p-4 text-left flex justify-between items-center hover:cursor-pointer'
