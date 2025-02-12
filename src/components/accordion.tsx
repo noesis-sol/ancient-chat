@@ -80,7 +80,7 @@ const AccordionSection = ({ data }: AccordionSectionProps) => {
                   type='checkbox'
                   checked={!!section.isActive}
                   onChange={() => toggleActive(section.title, section.isActive)}
-                  className='toggle checked:bg-orange-400 checked:text-orange-800 checked:border-orange-500 '
+                  className='toggle checked:bg-primary'
                 />
                 <button
                   onClick={() => toggleSection(index)}

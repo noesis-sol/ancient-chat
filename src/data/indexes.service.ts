@@ -107,7 +107,6 @@ export class IndexesService {
             where: { id: index.id },
             data: {
               name: index.name,
-              is_active: index.is_active,
               weight: index.weight
             }
           })
