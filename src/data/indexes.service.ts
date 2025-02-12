@@ -55,21 +55,21 @@ export class IndexesService {
     });
   }
 
-  async deleteIndex(id: string) {
+  async deleteIndex(name: string) {
     const index = await this.prisma.index.findUnique({
       where: {
-        id: id
+        name
       }
     });
 
     if (!index) {
-      throw new Error(`Index with id ${id} not found`);
+      throw new Error(`Index with id ${name} not found`);
     }
 
     await this.pinecone.deleteIndex(index.name);
     return await this.prisma.index.delete({
       where: {
-        id: id
+        name
       }
     });
   }
@@ -121,13 +121,6 @@ export class IndexesService {
 
       // Execute all operations in a transaction
       await this.prisma.$transaction([...createOperations, ...updateOperations, ...deleteOperations]);
-
-      // Log the sync results
-      console.log(`Synced Pinecone indexes:
-      Created: ${createOperations.length}
-      Updated: ${updateOperations.length}
-      Deleted: ${deleteOperations.length}
-    `);
     } catch (error) {
       console.error('Error updating database indexes:', error);
       throw error;
