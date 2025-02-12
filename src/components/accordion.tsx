@@ -16,6 +16,7 @@ interface AccordionSectionProps {
 const AccordionSection = ({ data }: AccordionSectionProps) => {
   const [openSection, setOpenSection] = useState<number | null>(null);
   const [deleteTitle, setDeleteTitle] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [accordionData, setAccordionData] = useState<AccordionItem[]>(data);
   const [weights, setWeights] = useState<{ [key: string]: number }>({});
   const [loadingToggles, setLoadingToggles] = useState<{ [key: string]: boolean }>({});
@@ -30,13 +31,20 @@ const AccordionSection = ({ data }: AccordionSectionProps) => {
   }
 
   const onDelete = async (title: string) => {
-    const result = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/indexes/${title}`, {
-      method: 'DELETE'
-    });
-    const { success } = (await result.json()) as { success: boolean };
-    if (success) {
-      removeSection(title);
-      setDeleteTitle(null);
+    setIsDeleting(true);
+    try {
+      const result = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/indexes/${title}`, {
+        method: 'DELETE'
+      });
+      const { success } = (await result.json()) as { success: boolean };
+      if (success) {
+        removeSection(title);
+        setDeleteTitle(null);
+      }
+    } catch (error) {
+      console.error('Failed to delete section:', error);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -108,7 +116,6 @@ const AccordionSection = ({ data }: AccordionSectionProps) => {
       const { success } = await result.json();
       if (success) {
         setAccordionData((prev) => prev.map((item) => (item.title === title ? updatedItem : item)));
-        // Clear the temporary weight state
         setWeights((prev) => {
           const newWeights = { ...prev };
           delete newWeights[title];
@@ -230,11 +237,19 @@ const AccordionSection = ({ data }: AccordionSectionProps) => {
             Are you sure you want to delete &quot;{deleteTitle}&quot;? This action cannot be undone.
           </p>
           <div className='modal-action'>
-            <button className='btn btn-outline' onClick={() => setDeleteTitle(null)}>
+            <button className='btn btn-outline' onClick={() => setDeleteTitle(null)} disabled={isDeleting}>
               Cancel
             </button>
-            <button className='btn btn-error' onClick={() => deleteTitle && onDelete(deleteTitle)}>
-              Delete
+            <button
+              className='btn btn-error'
+              onClick={() => deleteTitle && onDelete(deleteTitle)}
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
+              ) : (
+                'Delete'
+              )}
             </button>
           </div>
         </div>
