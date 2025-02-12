@@ -22,11 +22,12 @@ export default async function AdminPage() {
 
   //get all indexes from pinecone
 
-  let indexes = await indexesService.getActiveIndexes();
+  let indexes = await indexesService.getIndexes();
 
   const myAccordionData =
     indexes?.map((index) => {
       return {
+        id: index.id,
         title: index.name,
         content: index.id,
         isActive: index.is_active

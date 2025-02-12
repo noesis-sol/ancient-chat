@@ -25,7 +25,7 @@ model Message {
 
 model Index {
   id        String  @id
-  name      String
+  name      String  @unique
   is_active Boolean
   weight    Float
 }

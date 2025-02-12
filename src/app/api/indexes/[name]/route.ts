@@ -1,10 +1,8 @@
+import { IndexesService } from '@/data/indexes.service';
 import { getAuth } from '@clerk/nextjs/server';
-import { Pinecone } from '@pinecone-database/pinecone';
 import { NextRequest, NextResponse } from 'next/server';
 
-const pinecone = new Pinecone({
-  apiKey: process.env.PINECONE_API_KEY!
-});
+const indexesService = new IndexesService();
 
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ name: string }> }) {
   const { userId } = getAuth(request);
@@ -13,6 +11,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   }
 
   const { name } = await params;
-  await pinecone.deleteIndex(name);
+  await indexesService.deleteIndex(name);
   return NextResponse.json({ success: true });
 }
+

@@ -2,6 +2,7 @@
 import { useState } from 'react';
 
 export type AccordionItem = {
+  id: string;
   title: string;
   content: string;
   isActive: boolean;
@@ -47,16 +48,15 @@ const AccordionSection = ({ data }: AccordionSectionProps) => {
 
   const toggleActive = async (title: string, currentState: boolean) => {
     try {
-      // const result = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/indexes/${title}/toggle`, {
-      //   method: 'PATCH',
-      //   headers: {
-      //     'Content-Type': 'application/json'
-      //   },
-      //   body: JSON.stringify({ isActive: !currentState })
-      // });
+      const result = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/indexes/${title}/toggle`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ isActive: !currentState })
+      });
 
-      // const { success } = await result.json();
-      const success = true;
+      const { success } = await result.json();
       if (success) {
         setAccordionData((prev) =>
           prev.map((item) => (item.title === title ? { ...item, isActive: !item.isActive } : item))
