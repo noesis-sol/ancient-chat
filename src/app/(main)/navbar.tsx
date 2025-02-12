@@ -12,7 +12,7 @@ export default function Navbar() {
             alt='AGRs logo'
             height={45}
             width={45}
-            src='https://yt3.googleusercontent.com/4eUXHkAB-XSqTDzKwvWHmQgZ2njUkqbqoXRIi9kHayq_ssr_8zqw5HMfDMQjSw-Fx8wXPLWAfbM=s176-c-k-c0x00ffffff-no-rj'
+            src='/logo.jpg'
           />
         </Link>
         <SignedIn>
