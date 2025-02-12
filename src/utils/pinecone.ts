@@ -29,7 +29,11 @@ export async function queryPineconeContext(question: string) {
 
   const totalChunks = 10;
 
-  const totalWeight = activeIndexes.reduce((acc, index) => acc + index.weight, 0);
+  let totalWeight = activeIndexes.reduce((acc, index) => acc + index.weight, 0);
+
+  if(totalWeight === 0) {
+    return totalWeight = 1;
+  }
 
   for (const index of activeIndexes) {
     const pineconeIndex = pinecone.Index(index.name);

@@ -19,6 +19,7 @@ const AccordionSection = ({ data }: AccordionSectionProps) => {
   const [accordionData, setAccordionData] = useState<AccordionItem[]>(data);
   const [weights, setWeights] = useState<{ [key: string]: number }>({});
   const [loadingToggles, setLoadingToggles] = useState<{ [key: string]: boolean }>({});
+  const [loadingWeights, setLoadingWeights] = useState<{ [key: string]: boolean }>({});
 
   const toggleSection = (index: number) => {
     setOpenSection(openSection === index ? null : index);
@@ -78,6 +79,8 @@ const AccordionSection = ({ data }: AccordionSectionProps) => {
     const index = accordionData.findIndex((item) => item.title === title);
     if (index === -1) return;
 
+    setLoadingWeights((prev) => ({ ...prev, [title]: true }));
+
     const updatedItem = {
       ...accordionData[index],
       weight
@@ -114,6 +117,8 @@ const AccordionSection = ({ data }: AccordionSectionProps) => {
       }
     } catch (error) {
       console.error('Failed to update weight:', error);
+    } finally {
+      setLoadingWeights((prev) => ({ ...prev, [title]: false }));
     }
   };
 
@@ -186,14 +191,25 @@ const AccordionSection = ({ data }: AccordionSectionProps) => {
                       step='0.1'
                       value={weights[section.title] ?? section.weight ?? 0}
                       onChange={(e) => handleWeightChange(section.title, e.target.value)}
-                      className='input input-bordered input-sm w-24'
+                      disabled={loadingWeights[section.title]}
+                      className={`input input-bordered input-sm w-24 ${
+                        loadingWeights[section.title] ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
                     />
                     <button
                       onClick={() => updateWeight(section.title, weights[section.title] ?? section.weight ?? 0)}
-                      className='btn btn-primary btn-sm'
-                      disabled={!weights[section.title] && weights[section.title] !== 0}
+                      disabled={
+                        loadingWeights[section.title] || (!weights[section.title] && weights[section.title] !== 0)
+                      }
+                      className={`btn btn-primary btn-sm ${
+                        loadingWeights[section.title] ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
                     >
-                      Save
+                      {loadingWeights[section.title] ? (
+                        <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
+                      ) : (
+                        'Save'
+                      )}
                     </button>
                   </div>
                   <button onClick={() => setDeleteTitle(section.title)} className='btn btn-outline btn-error btn-sm'>
