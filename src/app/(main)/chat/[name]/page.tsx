@@ -77,13 +77,13 @@ export default function ChatWith({ params }: { params: Promise<{ name: string }>
                 ref={inputRef}
                 type='text'
                 placeholder='Type here'
-                className='input input-bordered w-full'
+                className='input input-bordered w-full text-lg'
                 value={input}
                 onChange={handleInputChange}
               />
             </div>
             <div className='ml-2'>
-              <button className='btn btn-primary'>
+              <button className='btn btn-primary text-lg'>
                 <span>Send</span>
                 <PaperAirplaneIcon className='h-5'></PaperAirplaneIcon>
               </button>

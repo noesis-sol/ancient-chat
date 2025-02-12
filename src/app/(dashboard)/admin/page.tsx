@@ -1,10 +1,8 @@
 import AccordionSection from '@/components/accordion';
 import IndexUploadModal from '@/components/file-upload-modal';
+import { IndexesService } from '@/data/indexes.service';
 import { currentUser } from '@clerk/nextjs/server';
-import { IndexList, Pinecone } from '@pinecone-database/pinecone';
 import { redirect } from 'next/navigation';
-
-const pinecone = new Pinecone();
 
 const approvedEmails = [
   'adam@agr-series.com',
@@ -14,6 +12,7 @@ const approvedEmails = [
 ];
 
 export default async function AdminPage() {
+  const indexesService = new IndexesService();
   const user = await currentUser();
   const [email] = user?.emailAddresses ?? [];
 
@@ -22,13 +21,17 @@ export default async function AdminPage() {
   }
 
   //get all indexes from pinecone
-  let { indexes }: IndexList = await pinecone.listIndexes();
+
+  let indexes = await indexesService.getIndexes();
 
   const myAccordionData =
     indexes?.map((index) => {
       return {
+        id: index.id,
         title: index.name,
-        content: index.host
+        content: index.id,
+        isActive: index.is_active,
+        weight: index.weight
       };
     }) ?? [];
 

@@ -22,3 +22,10 @@ model Message {
   name         String?
   type         String
 }
+
+model Index {
+  id        String  @id
+  name      String  @unique
+  is_active Boolean
+  weight    Float
+}
