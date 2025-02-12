@@ -8,7 +8,7 @@ export default function Navbar() {
       <div className='flex flex-1 justify-between'>
         <Link href='/chat' className='btn btn-ghost text-xl'>
           <Image
-            className='border-solid border border-white rounded-full border-2'
+            className='border-solid border-white rounded-full border-2'
             alt='AGRs logo'
             height={45}
             width={45}
