@@ -30,7 +30,8 @@ export default async function AdminPage() {
         id: index.id,
         title: index.name,
         content: index.id,
-        isActive: index.is_active
+        isActive: index.is_active,
+        weight: index.weight
       };
     }) ?? [];
 

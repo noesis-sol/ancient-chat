@@ -6,6 +6,7 @@ export type AccordionItem = {
   title: string;
   content: string;
   isActive: boolean;
+  weight: number;
 };
 
 interface AccordionSectionProps {
@@ -16,6 +17,7 @@ const AccordionSection = ({ data }: AccordionSectionProps) => {
   const [openSection, setOpenSection] = useState<number | null>(null);
   const [deleteTitle, setDeleteTitle] = useState<string | null>(null);
   const [accordionData, setAccordionData] = useState<AccordionItem[]>(data);
+  const [weights, setWeights] = useState<{ [key: string]: number }>({});
 
   const toggleSection = (index: number) => {
     setOpenSection(openSection === index ? null : index);
@@ -32,7 +34,7 @@ const AccordionSection = ({ data }: AccordionSectionProps) => {
     const { success } = (await result.json()) as { success: boolean };
     if (success) {
       removeSection(title);
-      setDeleteTitle(null); // Close modal after successful deletion
+      setDeleteTitle(null);
     }
   };
 
@@ -67,6 +69,59 @@ const AccordionSection = ({ data }: AccordionSectionProps) => {
     }
   };
 
+  const updateWeight = async (title: string, weight: number) => {
+    const index = accordionData.findIndex((item) => item.title === title);
+    if (index === -1) return;
+
+    const updatedItem = {
+      ...accordionData[index],
+      weight
+    };
+
+    try {
+      const result = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/indexes/${title}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: updatedItem.title,
+          id: updatedItem.id,
+          is_active: updatedItem.isActive,
+          weight: updatedItem.weight
+        } as {
+          name: string;
+          id: string;
+          is_active: boolean;
+          weight: number;
+        })
+      });
+
+      const { success } = await result.json();
+      if (success) {
+        setAccordionData((prev) => prev.map((item) => (item.title === title ? updatedItem : item)));
+        // Clear the temporary weight state
+        setWeights((prev) => {
+          const newWeights = { ...prev };
+          delete newWeights[title];
+          return newWeights;
+        });
+      }
+    } catch (error) {
+      console.error('Failed to update weight:', error);
+    }
+  };
+
+  const handleWeightChange = (title: string, value: string) => {
+    const numValue = parseFloat(value);
+    if (!isNaN(numValue) && numValue >= 0 && numValue <= 1) {
+      setWeights((prev) => ({
+        ...prev,
+        [title]: numValue
+      }));
+    }
+  };
+
   return (
     <>
       <div className='w-full mx-auto space-y-2'>
@@ -75,7 +130,7 @@ const AccordionSection = ({ data }: AccordionSectionProps) => {
             <div className='flex justify-between items-center p-4'>
               <span className='font-medium'>{section.title}</span>
 
-              <div className='flex items-center'>
+              <div className='flex items-center gap-4'>
                 <input
                   type='checkbox'
                   checked={!!section.isActive}
@@ -84,7 +139,7 @@ const AccordionSection = ({ data }: AccordionSectionProps) => {
                 />
                 <button
                   onClick={() => toggleSection(index)}
-                  className='w-full p-4 text-left flex justify-between items-center hover:cursor-pointer'
+                  className='p-4 text-left flex justify-between items-center hover:cursor-pointer'
                 >
                   <svg
                     className={`w-5 h-5 transition-transform duration-200 ${
@@ -106,9 +161,30 @@ const AccordionSection = ({ data }: AccordionSectionProps) => {
             >
               <div className='p-4 flex justify-between items-center'>
                 <div>{section.content}</div>
-                <button onClick={() => setDeleteTitle(section.title)} className='btn btn-outline btn-error'>
-                  Delete
-                </button>
+                <div className='flex items-center gap-4'>
+                  <div className='flex items-center gap-2'>
+                    <label className='text-sm'>Weight:</label>
+                    <input
+                      type='number'
+                      min='0'
+                      max='1'
+                      step='0.1'
+                      value={weights[section.title] ?? section.weight ?? 0}
+                      onChange={(e) => handleWeightChange(section.title, e.target.value)}
+                      className='input input-bordered input-sm w-24'
+                    />
+                    <button
+                      onClick={() => updateWeight(section.title, weights[section.title] ?? section.weight ?? 0)}
+                      className='btn btn-primary btn-sm'
+                      disabled={!weights[section.title] && weights[section.title] !== 0}
+                    >
+                      Save
+                    </button>
+                  </div>
+                  <button onClick={() => setDeleteTitle(section.title)} className='btn btn-outline btn-error btn-sm'>
+                    Delete
+                  </button>
+                </div>
               </div>
             </div>
           </div>

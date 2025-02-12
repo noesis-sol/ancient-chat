@@ -25,13 +25,12 @@ export class IndexesService {
     });
   }
 
-  async updateIndex(id: string, data: Index) {
-    return await this.prisma.index.upsert({
+  async updateIndex(name: string, data: Index) {
+    return await this.prisma.index.update({
       where: {
-        id: id
+        name
       },
-      update: data,
-      create: data
+      data,
     });
   }
 
@@ -106,8 +105,7 @@ export class IndexesService {
           this.prisma.index.update({
             where: { id: index.id },
             data: {
-              name: index.name,
-              weight: index.weight
+              name: index.name
             }
           })
         );
