@@ -97,7 +97,7 @@ export class IndexesService {
       // Prepare operations
       const createOperations = pineconeIndexes
         .filter((index) => !existingIndexIds.has(index.id))
-        .map((index) => this.prisma.index.create({ data: index }));
+        .map((index) => this.prisma.index.create({ data: {...index, weight: 1} }));
 
       const updateOperations = pineconeIndexes
         .filter((index) => existingIndexIds.has(index.id))
