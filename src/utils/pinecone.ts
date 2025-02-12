@@ -27,11 +27,16 @@ export async function queryPineconeContext(question: string) {
     return context;
   }
 
-  const topK = activeIndexes.length > 1 ? 3 : 5;
+  const totalChunks = 10;
+
+  const totalWeight = activeIndexes.reduce((acc, index) => acc + index.weight, 0);
 
   for (const index of activeIndexes) {
     const pineconeIndex = pinecone.Index(index.name);
     const embedding = await getEmbedding(question);
+
+    const weight = index.weight / totalWeight;
+    const topK = Math.round(totalChunks * weight);
 
     const results = await pineconeIndex.query({
       vector: embedding,
