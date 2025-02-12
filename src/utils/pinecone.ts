@@ -1,5 +1,5 @@
 import { IndexesService } from '@/data/indexes.service';
-import { Pinecone } from '@pinecone-database/pinecone';
+import { Pinecone, RecordMetadataValue } from '@pinecone-database/pinecone';
 import { OpenAI } from 'openai';
 
 const pinecone = new Pinecone({
@@ -20,9 +20,9 @@ async function getEmbedding(text: string) {
   return response.data[0].embedding;
 }
 
-export async function queryPineconeContext(question: string) {
+export async function queryPineconeContext(question: string): Promise<RecordMetadataValue[]> {
   const activeIndexes = await indexesService.getActiveIndexes();
-  const context: any[] = [];
+  const context: RecordMetadataValue[] = [];
   if (activeIndexes.length === 0) {
     return context;
   }
@@ -32,7 +32,7 @@ export async function queryPineconeContext(question: string) {
   let totalWeight = activeIndexes.reduce((acc, index) => acc + index.weight, 0);
 
   if(totalWeight === 0) {
-    return totalWeight = 1;
+    totalWeight = 1;
   }
 
   for (const index of activeIndexes) {
@@ -49,7 +49,7 @@ export async function queryPineconeContext(question: string) {
     });
 
     if (results.matches?.length) {
-      context.push(...(results.matches.map((match) => match.metadata?.text) || []));
+      context.push(...(results.matches.map((match) => match.metadata?.text ?? "") || []));
     }
   }
   return context;
