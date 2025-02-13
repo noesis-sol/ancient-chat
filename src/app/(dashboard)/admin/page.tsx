@@ -1,22 +1,15 @@
 import AccordionSection from '@/components/accordion';
 import IndexUploadModal from '@/components/file-upload-modal';
 import { IndexesService } from '@/data/indexes.service';
+import { adminEmails } from '@/utils/emails';
 import { currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
-
-const approvedEmails = [
-  'adam@agr-series.com',
-  'michael@agr-series.com',
-  'michael@noesis.solutions',
-  'andreas@noesis.solutions'
-];
 
 export default async function AdminPage() {
   const indexesService = new IndexesService();
   const user = await currentUser();
-  const [email] = user?.emailAddresses ?? [];
 
-  if (!user || !approvedEmails.includes(email?.emailAddress ?? '')) {
+  if (!user || !user?.emailAddresses?.some((email) => adminEmails.includes(email.emailAddress))) {
     redirect('/');
   }
 

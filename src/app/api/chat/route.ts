@@ -1,12 +1,15 @@
+import { PromptService } from '@/data/prompt.service';
 import { queryPineconeContext } from '@/utils/pinecone';
 import { openai } from '@ai-sdk/openai';
 import { currentUser, getAuth } from '@clerk/nextjs/server';
 import { CoreMessage, streamText } from 'ai';
 import { NextRequest, NextResponse } from 'next/server';
 
-const getPrompt = (userName: string, context: string) => {
-  return `You are Aristotle, an ancient Greek philosopher. 
-    You are answering questions regarding everyday problems that people might face.
+const  getPrompt = async (userName: string, context: string) => {
+  const service = new PromptService();
+  const customPrompt = await service.getPrompt();
+
+  return `${customPrompt.text}\n
     Answer in the first person to a person called ${userName}.
     
     Limit your answers to the context below.
@@ -26,7 +29,7 @@ export async function POST(request: NextRequest) {
   try {
     const lastMessage = messages.findLast((m) => m.role === 'user');
     const context = await queryPineconeContext(lastMessage?.content.toString() ?? '');
-    const content = getPrompt(user?.firstName ?? '', context.join('\n'));
+    const content = await getPrompt(user?.firstName ?? '', context.join('\n'));
 
     const result = streamText({
       model: openai('gpt-4o-mini'),

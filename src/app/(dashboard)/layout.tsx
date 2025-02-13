@@ -1,5 +1,6 @@
 import { lemonMilkFont } from '@/utils/fonts';
 import { ClerkProvider } from '@clerk/nextjs';
+import Link from 'next/link';
 import React from 'react';
 import '.././globals.css';
 
@@ -33,7 +34,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <div>
                   <ul className='menu w-80 p-4 text-base-content space-y-1'>
                     <li>
-                      <a href='/admin'>Indexes</a>
+                      <Link href='/admin'>Indexes</Link>
+                    </li>
+                    <li>
+                      <Link href='/admin/prompt'>Prompt</Link>
+                    </li>
+                    <li>
+                      <Link href='/chat'>Chat</Link>
                     </li>
                   </ul>
                 </div>
