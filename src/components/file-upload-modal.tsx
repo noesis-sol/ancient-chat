@@ -268,11 +268,20 @@ const IndexUploadModal = () => {
 
   const renderFileTree = (items: UploadItem[], level = 0) => {
     return items.map((item) => (
-      <div key={item.path} className='flex flex-col' style={{ marginLeft: `${level * 20}px` }}>
+      <div
+        key={item.path}
+        className={`flex flex-col ${isUploading ? 'opacity-50' : ''}`}
+        style={{ marginLeft: `${level * 20}px` }}
+      >
         <div className='flex items-center gap-2 py-1'>
           {item.type === 'folder' ? <Folder className='w-4 h-4' /> : <File className='w-4 h-4' />}
           <span className='flex-1'>{item.path}</span>
-          <button className='btn btn-ghost btn-xs' onClick={() => removeFile(item.path)}>
+          <button
+            className='btn btn-ghost btn-xs'
+            onClick={() => removeFile(item.path)}
+            disabled={isUploading}
+            aria-disabled={isUploading}
+          >
             <X className='w-4 h-4' />
           </button>
         </div>
