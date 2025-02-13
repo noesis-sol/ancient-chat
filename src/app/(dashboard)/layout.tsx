@@ -35,6 +35,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <li>
                       <a href='/admin'>Indexes</a>
                     </li>
+                    <li>
+                      <a href='/chat'>Chat</a>
+                    </li>
                   </ul>
                 </div>
               </div>
