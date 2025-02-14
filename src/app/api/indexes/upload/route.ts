@@ -1,9 +1,20 @@
-// app/api/upload/route.ts
 import { Document } from '@langchain/core/documents';
 import { OpenAIEmbeddings } from '@langchain/openai';
 import { Pinecone } from '@pinecone-database/pinecone';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 import { NextRequest, NextResponse } from 'next/server';
+
+// Custom error class for better error handling
+class IndexError extends Error {
+    constructor(
+        message: string,
+        public status: number,
+        public code: string
+    ) {
+        super(message);
+        this.name = 'IndexError';
+    }
+}
 
 // Function to sanitize index name according to Pinecone's requirements
 function sanitizeIndexName(name: string): string {
@@ -12,19 +23,15 @@ function sanitizeIndexName(name: string): string {
     // Convert to lowercase and replace invalid characters with hyphens
     return name.toLowerCase()
         .replace(/[^a-z0-9-]/g, '-')
-        .replace(/-+/g, '-') // Replace multiple consecutive hyphens with a single one
-        .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
 }
 
-// Function to get the root folder name from a path
 function getRootFolderName(path: string): string {
-    // Remove leading slash if present
     const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-    // Get the first segment of the path
     return cleanPath.split('/')[0];
 }
 
-// Function to clean metadata for Pinecone
 function cleanMetadata(metadata: Record<string, any>): Record<string, string | number | boolean | string[]> {
     const cleanedMetadata: Record<string, string | number | boolean | string[]> = {};
     
@@ -37,7 +44,6 @@ function cleanMetadata(metadata: Record<string, any>): Record<string, string | n
         ) {
             cleanedMetadata[key] = value;
         } else if (value !== null && value !== undefined) {
-            // Convert complex objects to strings
             cleanedMetadata[key] = JSON.stringify(value);
         }
     }
@@ -54,9 +60,18 @@ export async function POST(request: NextRequest) {
         const fileType = formData.get('type') as string;
 
         if (!file) {
-            return NextResponse.json(
-                { error: 'No file provided' },
-                { status: 400 }
+            throw new IndexError(
+                'No file was provided for upload',
+                400,
+                'NO_FILE'
+            );
+        }
+
+        if (!path) {
+            throw new IndexError(
+                'File path is required',
+                400,
+                'NO_PATH'
             );
         }
 
@@ -65,22 +80,57 @@ export async function POST(request: NextRequest) {
         const indexName = sanitizeIndexName(rootFolder);
 
         if (!indexName) {
-            return NextResponse.json(
-                { error: 'Invalid index name derived from folder path' },
-                { status: 400 }
+            throw new IndexError(
+                'Invalid folder name. Please use alphanumeric characters, hyphens, or underscores',
+                400,
+                'INVALID_INDEX_NAME'
+            );
+        }
+
+        // Validate file size (e.g., 10MB limit)
+        const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+        if (file.size > MAX_FILE_SIZE) {
+            throw new IndexError(
+                'File size exceeds the maximum limit of 10MB',
+                400,
+                'FILE_TOO_LARGE'
             );
         }
 
         // Read file content
         const content = await file.text();
+        if (!content.trim()) {
+            throw new IndexError(
+                'File is empty',
+                400,
+                'EMPTY_FILE'
+            );
+        }
 
         // Initialize Pinecone client
+        if (!process.env.PINECONE_API_KEY) {
+            throw new IndexError(
+                'Pinecone API key is not configured',
+                500,
+                'MISSING_API_KEY'
+            );
+        }
+
         const pinecone = new Pinecone({
-            apiKey: process.env.PINECONE_API_KEY!,
+            apiKey: process.env.PINECONE_API_KEY,
         });
         
         // Get list of existing indexes
-        const indexList = await pinecone.listIndexes();
+        let indexList;
+        try {
+            indexList = await pinecone.listIndexes();
+        } catch (error) {
+            throw new IndexError(
+                'Failed to connect to Pinecone',
+                503,
+                'PINECONE_CONNECTION_ERROR'
+            );
+        }
         
         // Check if index exists, if not create it
         if (!indexList.indexes?.find(index => index.name === indexName)) {
@@ -97,21 +147,34 @@ export async function POST(request: NextRequest) {
                     }
                 });
 
-                // Wait for index to be ready
+                // Wait for index to be ready with timeout
                 let isReady = false;
-                while (!isReady) {
+                let attempts = 0;
+                const maxAttempts = 30; // 30 seconds timeout
+
+                while (!isReady && attempts < maxAttempts) {
                     const description = await pinecone.describeIndex(indexName);
                     if (description.status.ready) {
                         isReady = true;
                     } else {
                         await new Promise(resolve => setTimeout(resolve, 1000));
+                        attempts++;
                     }
                 }
+
+                if (!isReady) {
+                    throw new IndexError(
+                        'Timeout while waiting for index creation',
+                        500,
+                        'INDEX_CREATION_TIMEOUT'
+                    );
+                }
             } catch (error) {
-                console.error('Error creating index:', error);
-                return NextResponse.json(
-                    { error: 'Failed to create index' },
-                    { status: 500 }
+                if (error instanceof IndexError) throw error;
+                throw new IndexError(
+                    'Failed to create Pinecone index',
+                    500,
+                    'INDEX_CREATION_ERROR'
                 );
             }
         }
@@ -120,6 +183,14 @@ export async function POST(request: NextRequest) {
         const index = pinecone.Index(indexName);
 
         // Initialize OpenAI embeddings
+        if (!process.env.OPENAI_API_KEY) {
+            throw new IndexError(
+                'OpenAI API key is not configured',
+                500,
+                'MISSING_OPENAI_KEY'
+            );
+        }
+
         const embeddings = new OpenAIEmbeddings({
             openAIApiKey: process.env.OPENAI_API_KEY,
         });
@@ -147,33 +218,55 @@ export async function POST(request: NextRequest) {
         const batchSize = 100;
         for (let i = 0; i < docs.length; i += batchSize) {
             const batch = docs.slice(i, i + batchSize);
-            const vectors = await Promise.all(
-                batch.map(async (doc, j) => {
-                    const embedding = await embeddings.embedDocuments([doc.pageContent]);
-                    // Clean metadata before uploading
-                    const cleanedMetadata = cleanMetadata({
-                        ...doc.metadata,
-                        text: doc.pageContent,
-                    });
-                    
-                    return {
-                        id: `${path}-${i + j}`,
-                        values: embedding[0],
-                        metadata: cleanedMetadata,
-                    };
-                })
-            );
-            await index.upsert(vectors);
+            try {
+                const vectors = await Promise.all(
+                    batch.map(async (doc, j) => {
+                        const embedding = await embeddings.embedDocuments([doc.pageContent]);
+                        const cleanedMetadata = cleanMetadata({
+                            ...doc.metadata,
+                            text: doc.pageContent,
+                        });
+                        
+                        return {
+                            id: `${path}-${i + j}`,
+                            values: embedding[0],
+                            metadata: cleanedMetadata,
+                        };
+                    })
+                );
+                await index.upsert(vectors);
+            } catch (error) {
+                throw new IndexError(
+                    'Failed to process and upload document batch',
+                    500,
+                    'BATCH_PROCESSING_ERROR'
+                );
+            }
         }
 
         return NextResponse.json({ 
             success: true,
-            indexName: indexName 
+            indexName: indexName,
+            message: 'File successfully processed and indexed'
         });
     } catch (error) {
         console.error('Error processing file:', error);
+
+        if (error instanceof IndexError) {
+            return NextResponse.json(
+                { 
+                    error: error.message,
+                    code: error.code
+                },
+                { status: error.status }
+            );
+        }
+
         return NextResponse.json(
-            { error: 'Error processing file' },
+            { 
+                error: 'An unexpected error occurred while processing the file',
+                code: 'UNKNOWN_ERROR'
+            },
             { status: 500 }
         );
     }
