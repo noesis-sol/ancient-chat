@@ -15,6 +15,12 @@ interface FolderItem {
   children: (FileItem | FolderItem)[];
 }
 
+interface ErrorState {
+  message: string;
+  code: string;
+  filePath?: string;
+}
+
 type UploadItem = FileItem | FolderItem;
 
 const IndexUploadModal = () => {
@@ -26,6 +32,7 @@ const IndexUploadModal = () => {
   const [uploadedSize, setUploadedSize] = useState<number>(0);
   const [isUploading, setIsUploading] = useState(false);
   const [showProgress, setShowProgress] = useState(false);
+  const [error, setError] = useState<ErrorState | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const calculateTotalSize = (items: UploadItem[]): number => {
@@ -43,13 +50,52 @@ const IndexUploadModal = () => {
       const total = calculateTotalSize(files);
       setTotalSize(total);
     } else {
-      setTotalSize(0);
-      setUploadedSize(0);
-      setUploadProgress(0);
-      setCurrentFile('');
-      setShowProgress(false);
+      resetUploadState();
     }
   }, [files]);
+
+  const resetUploadState = () => {
+    setTotalSize(0);
+    setUploadedSize(0);
+    setUploadProgress(0);
+    setCurrentFile('');
+    setShowProgress(false);
+  };
+
+  const handleErrorResponse = async (response: Response, filePath: string) => {
+    const data = await response.json();
+    setError({
+      message: data.error || 'An unexpected error occurred',
+      code: data.code || 'UNKNOWN_ERROR',
+      filePath
+    });
+    setIsUploading(false);
+    setShowProgress(false);
+    throw new Error('Upload failed');
+  };
+
+  const dismissError = () => {
+    setError(null);
+  };
+
+  const getErrorMessage = (code: string): string => {
+    const errorMessages: Record<string, string> = {
+      NO_FILE: 'No file was provided for upload',
+      NO_PATH: 'File path is required',
+      INVALID_INDEX_NAME: 'Invalid folder name. Please use alphanumeric characters, hyphens, or underscores',
+      FILE_TOO_LARGE: 'File size exceeds the maximum limit of 10MB',
+      EMPTY_FILE: 'File is empty',
+      MISSING_API_KEY: 'Server configuration error: Missing API key',
+      PINECONE_CONNECTION_ERROR: 'Unable to connect to the database',
+      INDEX_CREATION_TIMEOUT: 'Timeout while creating the index',
+      INDEX_CREATION_ERROR: 'Failed to create the index',
+      MISSING_OPENAI_KEY: 'Server configuration error: Missing OpenAI key',
+      BATCH_PROCESSING_ERROR: 'Failed to process and upload document batch',
+      UNKNOWN_ERROR: 'An unexpected error occurred'
+    };
+
+    return errorMessages[code] || 'An unexpected error occurred';
+  };
 
   const processFileEntry = async (entry: FileSystemEntry): Promise<UploadItem> => {
     if (entry.isFile) {
@@ -179,8 +225,10 @@ const IndexUploadModal = () => {
   };
 
   const handleUpload = async () => {
+    if (error) return; // Don't start upload if there's an error
     setIsUploading(true);
     setShowProgress(true);
+    setError(null);
     abortControllerRef.current = new AbortController();
 
     try {
@@ -210,7 +258,8 @@ const IndexUploadModal = () => {
               });
 
               if (!response.ok) {
-                throw new Error(`Failed to upload ${item.path}`);
+                await handleErrorResponse(response, item.path);
+                return;
               }
 
               processed++;
@@ -239,27 +288,23 @@ const IndexUploadModal = () => {
 
       await processItems(files);
 
-      const modalElement = document.getElementById('index-upload-modal') as HTMLDialogElement;
-      if (modalElement) {
-        modalElement.close();
+      if (uploadProgress === 100) {
+        const modalElement = document.getElementById('index-upload-modal') as HTMLDialogElement;
+        if (modalElement) {
+          modalElement.close();
+        }
+        setFiles([]);
+        resetUploadState();
+        abortControllerRef.current = null;
       }
-      setFiles([]);
-      setCurrentFile('');
-      setUploadProgress(0);
-      setUploadedSize(0);
-      setIsUploading(false);
-      setShowProgress(false);
-      abortControllerRef.current = null;
-
-      alert('Files successfully uploaded!');
     } catch (error) {
       console.error('Error uploading files:', error);
       if ((error as Error).message !== 'Upload cancelled') {
-        alert('Error uploading files. Please try again.');
+        setError({
+          message: 'Failed to upload files',
+          code: 'UPLOAD_ERROR'
+        });
       }
-      setUploadProgress(0);
-      setCurrentFile('');
-      setUploadedSize(0);
       setIsUploading(false);
       setShowProgress(false);
       abortControllerRef.current = null;
@@ -268,11 +313,20 @@ const IndexUploadModal = () => {
 
   const renderFileTree = (items: UploadItem[], level = 0) => {
     return items.map((item) => (
-      <div key={item.path} className='flex flex-col' style={{ marginLeft: `${level * 20}px` }}>
+      <div
+        key={item.path}
+        className={`flex flex-col ${isUploading ? 'opacity-50' : ''}`}
+        style={{ marginLeft: `${level * 20}px` }}
+      >
         <div className='flex items-center gap-2 py-1'>
           {item.type === 'folder' ? <Folder className='w-4 h-4' /> : <File className='w-4 h-4' />}
           <span className='flex-1'>{item.path}</span>
-          <button className='btn btn-ghost btn-xs' onClick={() => removeFile(item.path)}>
+          <button
+            className='btn btn-ghost btn-xs'
+            onClick={() => removeFile(item.path)}
+            disabled={isUploading}
+            aria-disabled={isUploading}
+          >
             <X className='w-4 h-4' />
           </button>
         </div>
@@ -307,6 +361,21 @@ const IndexUploadModal = () => {
         <div className='modal-box max-w-3xl'>
           <h3 className='font-bold text-lg'>Upload Files</h3>
           <div className='mt-4'>
+            {error && (
+              <div role='alert' className='alert alert-error mb-4'>
+                <div className='flex-1'>
+                  <h3 className='font-bold'>Error</h3>
+                  <div className='text-sm'>
+                    {getErrorMessage(error.code)}
+                    {error.filePath && <p className='mt-1'>File: {error.filePath}</p>}
+                  </div>
+                </div>
+                <button className='btn btn-ghost btn-sm' onClick={dismissError}>
+                  <X className='w-4 h-4' />
+                </button>
+              </div>
+            )}
+
             {files.length === 0 ? (
               <div
                 onDrop={handleDrop}
@@ -334,6 +403,7 @@ const IndexUploadModal = () => {
                 </button>
               </div>
             )}
+
             {showProgress && (
               <div className='mt-4 space-y-2'>
                 <progress className='progress progress-primary w-full' value={uploadProgress} max='100'></progress>
@@ -345,15 +415,9 @@ const IndexUploadModal = () => {
                 </div>
               </div>
             )}
+
             <div className='modal-action'>
-              <form
-                method='dialog'
-                onSubmit={(e) => {
-                  if (isUploading) {
-                    e.preventDefault();
-                  }
-                }}
-              >
+              <form method='dialog'>
                 <button
                   className='btn btn-ghost mr-2'
                   type='button'
@@ -373,7 +437,7 @@ const IndexUploadModal = () => {
                 <button
                   className='btn btn-primary'
                   onClick={handleUpload}
-                  disabled={files.length === 0 || isUploading}
+                  disabled={files.length === 0 || isUploading || error !== null}
                   type='button'
                 >
                   {isUploading ? 'Uploading...' : 'Upload Files'}
