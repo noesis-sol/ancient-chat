@@ -211,11 +211,14 @@ describe.skipIf(!controllerHost)('Pinecone Local integration', () => {
       await indexes.setIndexAncient(index, 'plato');
       await indexes.toggleIndex(index, true);
     }
-    await indexes.updateIndex(republic.index, { weight: 3 });
+    // 4:1 splits the 10 chunks exactly. Weights that leave a remainder (3:1 is
+    // 7.5:2.5) hand it to the earlier row, whose order follows Pinecone's
+    // listIndexes and so differs between Pinecone Local images.
+    await indexes.updateIndex(republic.index, { weight: 4 });
 
     const sources = await queryPineconeContext('What is justice?', 'plato');
 
-    // Weights 3:1 split the 10 chunks 8:2.
+    // Weights 4:1 split the 10 chunks 8:2.
     expect(sources.filter(({ index }) => index === republic.index)).toHaveLength(8);
     expect(sources.filter(({ index }) => index === meno.index)).toHaveLength(2);
     for (const source of sources) {
