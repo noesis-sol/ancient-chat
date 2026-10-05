@@ -13,7 +13,7 @@ const indexes = vi.hoisted(() => ({
 }));
 
 const pinecone = vi.hoisted(() => ({
-  constructed: vi.fn(),
+  getPinecone: vi.fn(),
   listIndexes: vi.fn()
 }));
 
@@ -29,14 +29,7 @@ vi.mock('@/data/indexes.service', () => ({
 
 vi.mock('@/lib/env', () => ({ env: () => ({ PINECONE_API_KEY: 'test-key' }) }));
 
-vi.mock('@pinecone-database/pinecone', () => ({
-  Pinecone: class {
-    constructor() {
-      pinecone.constructed();
-    }
-    listIndexes = pinecone.listIndexes;
-  }
-}));
+vi.mock('@/lib/pinecone', () => ({ getPinecone: pinecone.getPinecone }));
 
 const { withAdmin } = await import('@/utils/adminAuth');
 const { GET } = await import('@/app/api/indexes/route');
@@ -78,7 +71,7 @@ const routes: Route[] = [
   {
     name: 'GET /api/indexes',
     call: () => GET(new NextRequest('http://localhost/api/indexes')),
-    effects: () => [pinecone.constructed, pinecone.listIndexes],
+    effects: () => [pinecone.getPinecone, pinecone.listIndexes],
     admin: async (response) => {
       expect(response.status).toBe(200);
       expect(await response.json()).toEqual({ indexes: [{ name: 'plato' }] });
@@ -116,7 +109,7 @@ const routes: Route[] = [
   {
     name: 'POST /api/indexes/upload',
     call: () => POST(uploadRequest()),
-    effects: () => [pinecone.constructed, pinecone.listIndexes],
+    effects: () => [pinecone.getPinecone, pinecone.listIndexes],
     admin: async (response) => {
       expect(response.status).toBe(400);
       expect(await response.json()).toMatchObject({ code: 'NO_FILE' });
@@ -127,6 +120,7 @@ const routes: Route[] = [
 beforeEach(() => {
   vi.clearAllMocks();
   vi.spyOn(console, 'error').mockImplementation(() => {});
+  pinecone.getPinecone.mockReturnValue({ listIndexes: pinecone.listIndexes });
   pinecone.listIndexes.mockResolvedValue({ indexes: [{ name: 'plato' }] });
 });
 

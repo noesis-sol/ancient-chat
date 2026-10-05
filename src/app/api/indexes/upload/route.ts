@@ -1,9 +1,9 @@
 import { Document } from '@langchain/core/documents';
 import { OpenAIEmbeddings } from '@langchain/openai';
-import { Pinecone } from '@pinecone-database/pinecone';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 import { NextRequest, NextResponse } from 'next/server';
 import { env } from '@/lib/env';
+import { getIndex, getPinecone } from '@/lib/pinecone';
 import { withAdmin } from '@/utils/adminAuth';
 import { cleanMetadata, getRootFolderName, sanitizeIndexName } from '@/utils/index-upload';
 
@@ -75,11 +75,8 @@ export const POST = withAdmin(async (request: NextRequest) => {
             );
         }
 
-        // Initialize Pinecone client
-        const pinecone = new Pinecone({
-            apiKey: env().PINECONE_API_KEY,
-        });
-        
+        const pinecone = getPinecone();
+
         // Get list of existing indexes
         let indexList;
         try {
@@ -140,7 +137,7 @@ export const POST = withAdmin(async (request: NextRequest) => {
         }
 
         // Get the index
-        const index = pinecone.Index(indexName);
+        const index = getIndex(indexName);
 
         // Initialize OpenAI embeddings
         const embeddings = new OpenAIEmbeddings({
@@ -186,7 +183,7 @@ export const POST = withAdmin(async (request: NextRequest) => {
                         };
                     })
                 );
-                await index.upsert(vectors);
+                await index.upsert({ records: vectors });
             } catch {
                 throw new IndexError(
                     'Failed to process and upload document batch',

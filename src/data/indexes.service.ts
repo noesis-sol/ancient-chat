@@ -1,5 +1,5 @@
-import { IndexList, Pinecone } from '@pinecone-database/pinecone';
-import { env } from '@/lib/env';
+import { IndexList } from '@pinecone-database/pinecone';
+import { getPinecone } from '@/lib/pinecone';
 import { prisma } from '@/lib/prisma';
 import { Index } from '@prisma/client';
 import { planIndexSync } from './index-sync';
@@ -8,14 +8,7 @@ import { planIndexSync } from './index-sync';
 let syncInFlight: Promise<void> | null = null;
 
 export class IndexesService {
-  private _pinecone?: Pinecone;
   private prisma = prisma;
-
-  // Created on first use: env() throws when PINECONE_API_KEY is unset,
-  // which breaks `next build` for routes that instantiate this service at module scope.
-  private get pinecone() {
-    return (this._pinecone ??= new Pinecone({ apiKey: env().PINECONE_API_KEY }));
-  }
 
   // Admin view: syncs with Pinecone first so it shows Pinecone's current indexes.
   // A failed sync is logged and the rows already in the DB are returned.
@@ -83,7 +76,7 @@ export class IndexesService {
       throw new Error(`Index with id ${name} not found`);
     }
 
-    await this.pinecone.deleteIndex(index.name);
+    await getPinecone().deleteIndex(index.name);
     return await this.prisma.index.delete({
       where: {
         name
@@ -99,7 +92,7 @@ export class IndexesService {
   }
 
   private async updateDatabaseIndexes() {
-    const { indexes }: IndexList = await this.pinecone.listIndexes();
+    const { indexes }: IndexList = await getPinecone().listIndexes();
 
     if (!indexes) {
       return;

@@ -1,20 +1,13 @@
 import { IndexesService } from '@/data/indexes.service';
 import { env } from '@/lib/env';
+import { getIndex, getPinecone } from '@/lib/pinecone';
 import { allocateChunks } from '@/utils/chunk-allocation';
 import { ContextSource, toContextSource } from '@/utils/context-sources';
-import { Pinecone } from '@pinecone-database/pinecone';
 import { OpenAI } from 'openai';
 
-// Clients are created on first use: reading env() at module scope throws
-// during `next build` when the API keys are unset.
-let pinecone: Pinecone | undefined;
+// Created on first use: reading env() at module scope throws during
+// `next build` when OPENAI_API_KEY is unset.
 let openai: OpenAI | undefined;
-
-function getPinecone() {
-  return (pinecone ??= new Pinecone({
-    apiKey: env().PINECONE_API_KEY
-  }));
-}
 
 function getOpenAI() {
   return (openai ??= new OpenAI({
@@ -49,7 +42,7 @@ export async function queryPineconeContext(question: string): Promise<ContextSou
 
   const results = await Promise.all(
     queries.map(({ name, topK }) =>
-      getPinecone().Index(name).query({
+      getIndex(name).query({
         vector: embedding,
         topK,
         includeMetadata: true

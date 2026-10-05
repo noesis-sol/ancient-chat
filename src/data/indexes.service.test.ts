@@ -16,13 +16,8 @@ const { listIndexes, db } = vi.hoisted(() => {
   return { listIndexes: vi.fn(), db };
 });
 
-vi.mock('@pinecone-database/pinecone', () => ({
-  Pinecone: class {
-    listIndexes = listIndexes;
-  }
-}));
+vi.mock('@/lib/pinecone', () => ({ getPinecone: () => ({ listIndexes }) }));
 vi.mock('@/lib/prisma', () => ({ prisma: db }));
-vi.mock('@/lib/env', () => ({ env: () => ({ PINECONE_API_KEY: 'test-key' }) }));
 
 import { IndexesService } from './indexes.service';
 
