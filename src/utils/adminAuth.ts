@@ -1,27 +1,11 @@
-import { hasAdminRole } from '@/utils/admin-role';
+import { AdminAuthState, resolveAdminRole } from '@/utils/admin-role';
 import { auth, currentUser, getAuth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import { NextRequest, NextResponse } from 'next/server';
 
-type AuthState = {
-  userId: string | null;
-  sessionClaims?: CustomJwtSessionClaims | null;
-};
-
-// The one admin check, for whatever auth() or getAuth() returned. Reads the role from the session
-// claims when the session token carries the metadata, otherwise from the user record.
-export const isAdmin = async ({ userId, sessionClaims }: AuthState): Promise<boolean> => {
-  if (!userId) {
-    return false;
-  }
-
-  if (sessionClaims?.metadata) {
-    return hasAdminRole(sessionClaims.metadata);
-  }
-
-  const user = await currentUser();
-  return hasAdminRole(user?.publicMetadata);
-};
+// The one admin check, for whatever auth() or getAuth() returned.
+export const isAdmin = (authState: AdminAuthState): Promise<boolean> =>
+  resolveAdminRole(authState, async () => (await currentUser())?.publicMetadata);
 
 // For admin pages and layouts: sends anyone who is not an admin back to the home page.
 export const redirectNonAdmin = async (): Promise<void> => {
