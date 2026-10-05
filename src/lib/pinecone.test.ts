@@ -44,7 +44,7 @@ describe('getIndex', () => {
   it('targets the index by name with the options object, on the shared client', async () => {
     const { getIndex, getPinecone } = await import('./pinecone');
 
-    expect(getIndex('plato')).toEqual({ options: { name: 'plato' } });
+    expect(await getIndex('plato')).toEqual({ options: { name: 'plato' } });
     expect(sdk.index).toHaveBeenCalledWith({ name: 'plato' });
     getPinecone();
     expect(sdk.constructed).toHaveBeenCalledOnce();

@@ -1,6 +1,6 @@
 import { IndexesService } from '@/data/indexes.service';
 import { env } from '@/lib/env';
-import { getIndex, getPinecone } from '@/lib/pinecone';
+import { getIndex } from '@/lib/pinecone';
 import { allocateChunks } from '@/utils/chunk-allocation';
 import { ContextSource, toContextSource } from '@/utils/context-sources';
 import { OpenAI } from 'openai';
@@ -42,8 +42,8 @@ export async function queryPineconeContext(question: string, ancient: string): P
   const embedding = await getEmbedding(question);
 
   const results = await Promise.all(
-    queries.map(({ name, topK }) =>
-      getIndex(name).query({
+    queries.map(async ({ name, topK }) =>
+      (await getIndex(name)).query({
         vector: embedding,
         topK,
         includeMetadata: true
@@ -54,8 +54,4 @@ export async function queryPineconeContext(question: string, ancient: string): P
   return results.flatMap((result, i) =>
     (result.matches ?? []).flatMap((match) => toContextSource(queries[i].name, match) ?? [])
   );
-}
-
-export async function deleteIndex(indexName: string) {
-  await getPinecone().deleteIndex(indexName);
 }

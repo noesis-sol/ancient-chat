@@ -1,5 +1,5 @@
 import { IndexList } from '@pinecone-database/pinecone';
-import { getPinecone } from '@/lib/pinecone';
+import { deleteIndex, getPinecone } from '@/lib/pinecone';
 import { prisma } from '@/lib/prisma';
 import type { Index } from '@/generated/prisma/client';
 import { planIndexSync } from './index-sync';
@@ -99,7 +99,7 @@ export class IndexesService {
       throw new NotFoundError(`Index "${name}" not found`);
     }
 
-    await getPinecone().deleteIndex(index.name);
+    await deleteIndex(index.name);
     return await orNotFound(
       () =>
         this.prisma.index.delete({

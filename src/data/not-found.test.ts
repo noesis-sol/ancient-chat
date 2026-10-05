@@ -12,7 +12,7 @@ const { db, pinecone } = vi.hoisted(() => ({
   pinecone: { deleteIndex: vi.fn() }
 }));
 
-vi.mock('@/lib/pinecone', () => ({ getPinecone: () => pinecone }));
+vi.mock('@/lib/pinecone', () => ({ getPinecone: () => pinecone, deleteIndex: pinecone.deleteIndex }));
 vi.mock('@/lib/prisma', () => ({ prisma: db }));
 
 import { IndexesService } from './indexes.service';

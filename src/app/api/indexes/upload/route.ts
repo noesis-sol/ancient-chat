@@ -137,7 +137,7 @@ export const POST = withAdmin(async (request: NextRequest) => {
         }
 
         // Get the index
-        const index = getIndex(indexName);
+        const index = await getIndex(indexName);
 
         // Initialize OpenAI embeddings
         const embeddings = new OpenAIEmbeddings({

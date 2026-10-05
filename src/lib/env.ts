@@ -31,6 +31,18 @@ const envSchema = z.object({
     'aws'
   ),
   PINECONE_REGION: withDefault(z.string().trim(), 'us-east-1'),
+  // Pinecone Local's control plane (http://localhost:5080) for development
+  // and tests. Unset means Pinecone's cloud.
+  PINECONE_CONTROLLER_HOST: z.preprocess(
+    unsetIfEmpty,
+    z
+      .string()
+      .trim()
+      .refine((value) => /^https?:\/\/[^/]/.test(value) && URL.canParse(value), {
+        message: 'must be an http:// or https:// URL',
+      })
+      .optional()
+  ),
 });
 
 export type Env = z.infer<typeof envSchema>;

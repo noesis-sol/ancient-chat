@@ -59,6 +59,7 @@ Pinecone, OpenAI and Clerk.
    | `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | no | `/sign-up`, likewise for sign-up |
    | `PINECONE_CLOUD` | no | Cloud for new Pinecone indexes: `aws` (default), `gcp` or `azure` |
    | `PINECONE_REGION` | no | Region for new Pinecone indexes (default `us-east-1`) |
+   | `PINECONE_CONTROLLER_HOST` | no | Pinecone Local's URL (`http://localhost:5080`) instead of Pinecone's cloud, see [Local Pinecone](#local-pinecone) |
 
    When a required variable is missing or malformed, the server stops at
    startup with an error that names it:
@@ -120,6 +121,32 @@ npm run dev     # development server on http://localhost:3000
 npm run build   # production build
 npm start       # serve the production build
 ```
+
+### Local Pinecone
+
+For development and tests the app can use
+[Pinecone Local](https://docs.pinecone.io/guides/operations/local-development),
+an in-memory emulator in Docker, instead of a Pinecone account. Start it:
+
+```bash
+docker run -d --name pinecone-local -e PORT=5080 -e PINECONE_HOST=localhost \
+  -p 5080-5090:5080-5090 --platform linux/amd64 \
+  ghcr.io/pinecone-io/pinecone-local:latest
+```
+
+Then set `PINECONE_CONTROLLER_HOST=http://localhost:5080` and any value for
+`PINECONE_API_KEY` (Pinecone Local ignores keys). The control plane runs on
+port 5080 and each index gets its own port from 5081 up, which the app reads
+from the index description and reaches over the controller's `http://`
+scheme. Without `PINECONE_CONTROLLER_HOST`, the app uses Pinecone's cloud.
+
+Pinecone Local is not the real service:
+
+- It keeps everything in memory, so indexes are gone when the container stops.
+- Each index holds at most 100,000 records.
+- It emulates an older Pinecone API version than the SDK targets, so
+  behaviour can differ from the cloud.
+- It doesn't replace a manual pass against real Pinecone before a release.
 
 ## Checks
 
