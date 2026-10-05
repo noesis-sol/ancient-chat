@@ -1,21 +1,37 @@
-import { prisma } from '@/lib/prisma';
+import { Prisma, PrismaClient } from '@prisma/client';
+import { prisma as sharedPrisma } from '@/lib/prisma';
 
 const defaultPrompt = {
   text: 'You are Aristotle, an ancient Greek philosopher. You are answering questions regarding everyday problems that people might face.',
   is_active: true
 };
 
+// The partial unique index "Prompt_single_active_key" allows at most one active
+// prompt, so a second active row fails with a unique constraint violation.
+const isUniqueConstraintError = (error: unknown) =>
+  error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002';
+
 export class PromptService {
-  private prisma = prisma;
+  constructor(private prisma: Pick<PrismaClient, 'prompt' | '$transaction'> = sharedPrisma) {}
 
   async getPrompt() {
-    let prompt = await this.prisma.prompt.findFirst({ where: { is_active: true } });
-
-    if (!prompt) {
-      prompt = await this.createPrompt(defaultPrompt);
+    const prompt = await this.findActivePrompt();
+    if (prompt) {
+      return prompt;
     }
 
-    return prompt;
+    try {
+      return await this.createPrompt(defaultPrompt);
+    } catch (error) {
+      // A concurrent first request created the default before us; use theirs.
+      if (isUniqueConstraintError(error)) {
+        const created = await this.findActivePrompt();
+        if (created) {
+          return created;
+        }
+      }
+      throw error;
+    }
   }
 
   async createPrompt({ text, is_active }: { text: string; is_active: boolean }) {
@@ -28,14 +44,26 @@ export class PromptService {
   }
 
   async updatePrompt(id:string, { text, is_active = true }: { text: string; is_active?: boolean }) {
-    return await this.prisma.prompt.update({
-      where: {
-        id
-      },
-      data: {
-        text,
-        is_active
-      }
+    const data = { text, is_active };
+    if (!is_active) {
+      return await this.prisma.prompt.update({ where: { id }, data });
+    }
+
+    // Deactivate the others first: the unique index is checked per statement.
+    const [, prompt] = await this.prisma.$transaction([
+      this.prisma.prompt.updateMany({
+        where: { is_active: true, id: { not: id } },
+        data: { is_active: false }
+      }),
+      this.prisma.prompt.update({ where: { id }, data })
+    ]);
+    return prompt;
+  }
+
+  private findActivePrompt() {
+    return this.prisma.prompt.findFirst({
+      where: { is_active: true },
+      orderBy: { updatedAt: 'desc' }
     });
   }
 }

@@ -30,8 +30,13 @@ model Index {
   weight    Float
 }
 
+// At most one row may have is_active = true. Prisma can't express that, so the
+// partial unique index "Prompt_single_active_key" lives in the migration SQL
+// (prisma/migrations/*_single_active_prompt).
 model Prompt {
-  id        String  @id @default(cuid())
+  id        String   @id @default(cuid())
   text      String
   is_active Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
