@@ -1,9 +1,10 @@
 import { NotFoundError } from '@/data/not-found';
 import { MAX_WEIGHT, MIN_WEIGHT } from '@/utils/index-actions';
+import { MAX_PROMPT_CHARS } from '@/utils/prompt-text';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
-export const MAX_PROMPT_CHARS = 20_000;
+export { MAX_PROMPT_CHARS };
 
 // Each schema names the only fields its route writes; unknown keys are dropped,
 // so a caller cannot change an index's id or name, or anything else on the row.

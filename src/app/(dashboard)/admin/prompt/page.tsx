@@ -1,6 +1,7 @@
 'use client';
 
 import { ancients } from '@/data/ancients';
+import { MAX_PROMPT_CHARS, promptTextError, responseErrorMessage } from '@/utils/prompt-text';
 import { useEffect, useState } from 'react';
 
 interface Prompt {
@@ -51,9 +52,16 @@ export default function EditPromptPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSuccess(false);
+
+    const invalid = promptTextError(text);
+    if (invalid) {
+      setError(invalid);
+      return;
+    }
+
     setIsSaving(true);
     setError('');
-    setSuccess(false);
 
     try {
       const response = await fetch(`/api/prompt/${promptId}`, {
@@ -64,7 +72,10 @@ export default function EditPromptPage() {
         body: JSON.stringify({ text })
       });
 
-      if (!response.ok) throw new Error('Failed to update prompt');
+      if (!response.ok) {
+        setError(await responseErrorMessage(response, 'Failed to update prompt'));
+        return;
+      }
 
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
@@ -153,6 +164,9 @@ export default function EditPromptPage() {
                 required
                 disabled={isSaving}
               />
+              <span className={`text-sm text-right mt-1 ${text.length > MAX_PROMPT_CHARS ? 'text-error' : 'opacity-70'}`}>
+                {text.length.toLocaleString('en-US')} / {MAX_PROMPT_CHARS.toLocaleString('en-US')}
+              </span>
             </div>
 
             <div className='card-actions justify-end mt-6'>
