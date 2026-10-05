@@ -92,6 +92,8 @@ describe('IndexesService', () => {
 describe('PromptService.updatePrompt', () => {
   const fakePrisma = () => {
     const prompt = {
+      // The row is found when looked up, then gone by the time it is written.
+      findUnique: vi.fn(async () => ({ ancient: 'aristotle' })),
       update: vi.fn(() => Promise.reject(prismaError('P2025'))),
       updateMany: vi.fn(async () => ({ count: 1 }))
     };

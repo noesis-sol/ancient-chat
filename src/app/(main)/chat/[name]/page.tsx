@@ -1,31 +1,20 @@
 'use client';
 
 import Message from '@/app/(main)/chat/[name]/message';
-import { ancients } from '@/app/(main)/chat/ancients';
+import { findAncient } from '@/data/ancients';
 import { PaperAirplaneIcon } from '@heroicons/react/16/solid';
 import { createChatTransport, isBusy, isThinking, messageSources, messageText, type ChatUIMessage } from '@/utils/ui-message';
 import { useChat } from '@ai-sdk/react';
 import Image from 'next/image';
-import { redirect } from 'next/navigation';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { chatFont } from '@/utils/fonts';
-
-const transport = createChatTransport();
 
 export default function ChatWith({ params }: { params: Promise<{ name: string }> }) {
   const { name } = React.use(params);
 
   const inputRef = useRef(null);
-  const ancient = ancients.find((ancient) => ancient.name.toLowerCase() === name.toLowerCase()) ?? {
-    name: 'Unknown',
-    image: '/ancients/unknown.jpeg',
-    year: 'Unknown',
-    isEnabled: false
-  };
-
-  if (!ancient.isEnabled) {
-    redirect('/chat');
-  }
+  // The layout has already turned away unknown and disabled ancients.
+  const ancient = findAncient(name)!;
 
   useEffect(() => {
     if (inputRef.current != null && (inputRef.current as HTMLInputElement).scrollIntoView != null) {
@@ -34,6 +23,10 @@ export default function ChatWith({ params }: { params: Promise<{ name: string }>
   }, []);
 
   const [input, setInput] = useState('');
+  const transport = useMemo(
+    () => createChatTransport({ api: `/api/chat?ancient=${encodeURIComponent(ancient.slug)}` }),
+    [ancient.slug]
+  );
   const { messages, sendMessage, status, error, regenerate } = useChat<ChatUIMessage>({ transport });
 
   const canSend = input.trim() !== '' && !isBusy(status);

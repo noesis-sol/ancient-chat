@@ -9,21 +9,25 @@ vector indexes that admins build by uploading source texts.
 - **Next.js 15 (App Router)**, React 19, Tailwind 4 with daisyUI.
   - `src/app/(main)`: public site, sign-in/up pages and the chat UI (`/chat`).
   - `src/app/(dashboard)`: admin pages (`/admin` for indexes, `/admin/prompt`
-    for the system prompt).
+    for the system prompts).
+  - `src/data/ancients.ts`: the philosophers, their slugs and which are
+    enabled. The server rejects chats with unknown or disabled ones.
   - `src/app/api`: route handlers for chat, indexes, uploads and prompts.
 - **Clerk** handles authentication. `src/middleware.ts` requires sign-in for
   `/chat`. Admins are the users whose email address is listed in
   `src/utils/emails.ts`.
 - **PostgreSQL via Prisma** (`prisma/schema.prisma`) stores the indexes'
-  active flag and weight (`Index`) and the system prompt (`Prompt`).
+  ancient, active flag and weight (`Index`) and each ancient's system prompt
+  (`Prompt`).
 - **Pinecone** holds one serverless vector index per uploaded source folder.
   An upload splits each file into chunks, embeds them with OpenAI
   (`text-embedding-ada-002`, 1536 dimensions) and upserts them into the index
   named after the folder, creating it if needed.
-- **Chat** (`src/app/api/chat/route.ts`): embeds the user's last message,
-  queries the active indexes for 10 passages split by index weight
-  (`src/utils/pinecone.ts`), and streams a `gpt-4o-mini` answer through the
-  Vercel AI SDK, with the active prompt and the passages as the system message.
+- **Chat** (`src/app/api/chat/route.ts`, `POST /api/chat?ancient=<slug>`):
+  embeds the user's last message, queries that ancient's active indexes for 10
+  passages split by index weight (`src/utils/pinecone.ts`), and streams a
+  `gpt-4o-mini` answer through the Vercel AI SDK, with the ancient's active
+  prompt and the passages as the system message.
 - **Environment** is validated at server startup (`src/instrumentation.ts`,
   `src/lib/env.ts`).
 
@@ -92,10 +96,13 @@ Pinecone, OpenAI and Clerk.
    user menu). Changing the list needs a rebuild and redeploy.
 
 6. Load content. On `/admin`, upload a folder of text files: the folder name
-   becomes the Pinecone index name. Each index can be switched on or off and
-   given a weight, which sets its share of the passages retrieved for a
-   question. On `/admin/prompt`, edit the system prompt; until one is saved,
-   the first chat request creates a default Aristotle prompt.
+   becomes the Pinecone index name. Assign each index to an ancient (new
+   indexes start unassigned and unused), switch it on or off and give it a
+   weight, which sets its share of the passages retrieved for a question to
+   that ancient. On `/admin/prompt`, pick an ancient and edit their system
+   prompt; until one is saved, the first chat request creates a default one
+   ("You are <name>, ..."). To open a philosopher to users, set `isEnabled`
+   in `src/data/ancients.ts`.
 
 ## Running
 

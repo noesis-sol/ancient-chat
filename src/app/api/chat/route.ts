@@ -1,3 +1,4 @@
+import { Ancient, findEnabledAncient } from '@/data/ancients';
 import { PromptService } from '@/data/prompt.service';
 import {
   chatStreamResponse,
@@ -15,8 +16,8 @@ export const maxDuration = 30;
 
 const promptService = new PromptService();
 
-const  getPrompt = async (userName: string, context: string) => {
-  const customPrompt = await promptService.getPrompt();
+const  getPrompt = async (ancient: Ancient, userName: string, context: string) => {
+  const customPrompt = await promptService.getPrompt(ancient);
   const audience = userName ? `to a person called ${userName}` : 'to the person you are talking to';
 
   return `${customPrompt.text}\n
@@ -28,10 +29,17 @@ const  getPrompt = async (userName: string, context: string) => {
     ----`;
 };
 
+// POST /api/chat?ancient=<slug>
 export async function POST(request: NextRequest) {
   const { userId } = getAuth(request);
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // The chat page turns away disabled ancients too, but clients can call this route directly.
+  const ancient = findEnabledAncient(request.nextUrl.searchParams.get('ancient') ?? '');
+  if (!ancient) {
+    return NextResponse.json({ error: 'Unknown ancient' }, { status: 404 });
   }
 
   const body = await readBodyWithLimit(request, MAX_BODY_BYTES);
@@ -45,9 +53,9 @@ export async function POST(request: NextRequest) {
 
   try {
     const user = await currentUser();
-    const sources = await queryPineconeContext(chatRequest.lastUserMessage);
+    const sources = await queryPineconeContext(chatRequest.lastUserMessage, ancient.slug);
     const context = sources.map((source) => source.text).join('\n');
-    const instructions = await getPrompt(sanitizeUserName(user?.firstName), context);
+    const instructions = await getPrompt(ancient, sanitizeUserName(user?.firstName), context);
 
     return await chatStreamResponse({
       model: openai('gpt-4o-mini'),

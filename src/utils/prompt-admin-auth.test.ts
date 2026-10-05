@@ -36,7 +36,7 @@ const signedInAs = (emailAddress: string) => {
   clerk.currentUser.mockResolvedValue({ emailAddresses: [{ emailAddress }] });
 };
 
-const getRequest = () => new NextRequest('http://localhost/api/prompt');
+const getRequest = () => new NextRequest('http://localhost/api/prompt?ancient=aristotle');
 
 const putRequest = () =>
   new NextRequest('http://localhost/api/prompt/prompt-1', {

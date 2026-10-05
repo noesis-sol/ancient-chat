@@ -1,4 +1,5 @@
 'use client';
+import { ancients } from '@/data/ancients';
 import { MAX_WEIGHT, MIN_WEIGHT, parseWeight, sendIndexAction } from '@/utils/index-actions';
 import { X } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -9,6 +10,8 @@ export type AccordionItem = {
   content: string;
   isActive: boolean;
   weight: number;
+  // Slug of the ancient whose chat uses this index, or null for none.
+  ancient: string | null;
 };
 
 interface AccordionSectionProps {
@@ -29,6 +32,7 @@ const AccordionSection = ({ data }: AccordionSectionProps) => {
   const [weightDrafts, setWeightDrafts] = useState<{ [id: string]: string }>({});
   const [loadingToggles, setLoadingToggles] = useState<{ [id: string]: boolean }>({});
   const [loadingWeights, setLoadingWeights] = useState<{ [id: string]: boolean }>({});
+  const [loadingAncients, setLoadingAncients] = useState<{ [id: string]: boolean }>({});
   // A new object per failure, so a repeated message restarts the timer.
   const [toast, setToast] = useState<{ message: string } | null>(null);
 
@@ -89,6 +93,23 @@ const AccordionSection = ({ data }: AccordionSectionProps) => {
     setLoadingToggles((prev) => ({ ...prev, [id]: false }));
   };
 
+  const updateAncient = async ({ id, title }: AccordionItem, ancient: string | null) => {
+    setLoadingAncients((prev) => ({ ...prev, [id]: true }));
+    const result = await sendIndexAction(`/api/indexes/${encodeURIComponent(title)}/ancient`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ ancient })
+    });
+    if (result.ok) {
+      setAccordionData((prev) => prev.map((item) => (item.id === id ? { ...item, ancient } : item)));
+    } else {
+      setToast({ message: `Could not change the ancient of "${title}": ${result.message}` });
+    }
+    setLoadingAncients((prev) => ({ ...prev, [id]: false }));
+  };
+
   const updateWeight = async ({ id, title }: AccordionItem, weight: number) => {
     setLoadingWeights((prev) => ({ ...prev, [id]: true }));
     const result = await sendIndexAction(`/api/indexes/${encodeURIComponent(title)}`, {
@@ -135,6 +156,22 @@ const AccordionSection = ({ data }: AccordionSectionProps) => {
                 <span className='font-medium'>{section.title}</span>
 
                 <div className='flex items-center gap-4'>
+                  <select
+                    aria-label={`${section.title} ancient`}
+                    value={section.ancient ?? ''}
+                    onChange={(e) => updateAncient(section, e.target.value || null)}
+                    disabled={loadingAncients[section.id]}
+                    className={`select select-bordered select-sm ${
+                      loadingAncients[section.id] ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    <option value=''>No ancient</option>
+                    {ancients.map(({ slug, name, isEnabled }) => (
+                      <option key={slug} value={slug}>
+                        {isEnabled ? name : `${name} (disabled)`}
+                      </option>
+                    ))}
+                  </select>
                   <div className='relative'>
                     <input
                       type='checkbox'
@@ -232,8 +269,9 @@ const AccordionSection = ({ data }: AccordionSectionProps) => {
           );
         })}
         <p className='text-sm opacity-70'>
-          Weights are relative: chat splits its retrieved chunks between the active indexes in proportion to their
-          weights. New indexes start at {MAX_WEIGHT}, so lower the others to favour one.
+          Each ancient&apos;s chat uses only the active indexes assigned to that ancient; new indexes start unassigned.
+          Weights are relative: chat splits its retrieved chunks between those indexes in proportion to their weights.
+          New indexes start at {MAX_WEIGHT}, so lower the others to favour one.
         </p>
       </div>
 

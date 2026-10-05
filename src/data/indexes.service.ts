@@ -52,10 +52,23 @@ export class IndexesService {
   }
 
   // Chat path: reads the DB only. The admin page keeps the rows in line with Pinecone.
-  async getActiveIndexes() {
+  async getActiveIndexes(ancient: string) {
     return await this.prisma.index.findMany({
       where: {
-        is_active: true
+        is_active: true,
+        ancient
+      }
+    });
+  }
+
+  // Assigns the index to an ancient's chat, or to none with null.
+  async setIndexAncient(name: string, ancient: string | null) {
+    return await this.prisma.index.update({
+      where: {
+        name
+      },
+      data: {
+        ancient
       }
     });
   }

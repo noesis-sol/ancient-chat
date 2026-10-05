@@ -1,9 +1,13 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 import { describe, expect, it, vi } from 'vitest';
+import { findAncient } from './ancients';
 import { PromptService } from './prompt.service';
+
+const aristotle = findAncient('aristotle')!;
 
 const prompt = (id: string, is_active = true) => ({
   id,
+  ancient: 'aristotle',
   text: `prompt ${id}`,
   is_active,
   createdAt: new Date(),
@@ -20,6 +24,7 @@ function fakePrisma() {
   const db = {
     prompt: {
       findFirst: vi.fn(),
+      findUnique: vi.fn(async () => ({ ancient: 'aristotle' })),
       create: vi.fn(),
       update: vi.fn(async () => prompt('a')),
       updateMany: vi.fn(async () => ({ count: 1 })),
@@ -34,9 +39,9 @@ describe('PromptService.getPrompt', () => {
     const { db, service } = fakePrisma();
     db.prompt.findFirst.mockResolvedValue(prompt('a'));
 
-    await expect(service.getPrompt()).resolves.toMatchObject({ id: 'a' });
+    await expect(service.getPrompt(aristotle)).resolves.toMatchObject({ id: 'a' });
     expect(db.prompt.findFirst).toHaveBeenCalledWith({
-      where: { is_active: true },
+      where: { ancient: 'aristotle', is_active: true },
       orderBy: { updatedAt: 'desc' },
     });
     expect(db.prompt.create).not.toHaveBeenCalled();
@@ -47,9 +52,9 @@ describe('PromptService.getPrompt', () => {
     db.prompt.findFirst.mockResolvedValue(null);
     db.prompt.create.mockResolvedValue(prompt('default'));
 
-    await expect(service.getPrompt()).resolves.toMatchObject({ id: 'default' });
+    await expect(service.getPrompt(aristotle)).resolves.toMatchObject({ id: 'default' });
     expect(db.prompt.create).toHaveBeenCalledWith({
-      data: { text: expect.stringContaining('Aristotle'), is_active: true },
+      data: { ancient: 'aristotle', text: expect.stringContaining('Aristotle'), is_active: true },
     });
   });
 
@@ -58,7 +63,7 @@ describe('PromptService.getPrompt', () => {
     db.prompt.findFirst.mockResolvedValueOnce(null).mockResolvedValueOnce(prompt('theirs'));
     db.prompt.create.mockRejectedValue(uniqueViolation());
 
-    await expect(service.getPrompt()).resolves.toMatchObject({ id: 'theirs' });
+    await expect(service.getPrompt(aristotle)).resolves.toMatchObject({ id: 'theirs' });
     expect(db.prompt.create).toHaveBeenCalledTimes(1);
   });
 
@@ -67,17 +72,17 @@ describe('PromptService.getPrompt', () => {
     db.prompt.findFirst.mockResolvedValue(null);
     db.prompt.create.mockRejectedValue(new Error('connection refused'));
 
-    await expect(service.getPrompt()).rejects.toThrow('connection refused');
+    await expect(service.getPrompt(aristotle)).rejects.toThrow('connection refused');
   });
 });
 
 describe('PromptService.updatePrompt', () => {
-  it('deactivates the other prompts in the same transaction, before activating', async () => {
+  it("deactivates the ancient's other prompts in the same transaction, before activating", async () => {
     const { db, service } = fakePrisma();
 
     await expect(service.updatePrompt('a', { text: 'new' })).resolves.toMatchObject({ id: 'a' });
     expect(db.prompt.updateMany).toHaveBeenCalledWith({
-      where: { is_active: true, id: { not: 'a' } },
+      where: { ancient: 'aristotle', is_active: true, id: { not: 'a' } },
       data: { is_active: false },
     });
     expect(db.prompt.update).toHaveBeenCalledWith({

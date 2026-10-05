@@ -30,11 +30,11 @@ beforeEach(() => {
 });
 
 describe('IndexesService.getActiveIndexes', () => {
-  it('reads the DB only: no Pinecone call and no writes', async () => {
-    const rows = await new IndexesService().getActiveIndexes();
+  it("reads the ancient's active rows from the DB only: no Pinecone call and no writes", async () => {
+    const rows = await new IndexesService().getActiveIndexes('aristotle');
 
     expect(rows).toEqual([activeRow]);
-    expect(db.index.findMany).toHaveBeenCalledWith({ where: { is_active: true } });
+    expect(db.index.findMany).toHaveBeenCalledWith({ where: { is_active: true, ancient: 'aristotle' } });
     expect(listIndexes).not.toHaveBeenCalled();
     expect(db.$transaction).not.toHaveBeenCalled();
   });

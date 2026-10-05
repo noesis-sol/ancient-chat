@@ -18,13 +18,18 @@ model Index {
   name      String  @unique
   is_active Boolean
   weight    Float
+  // Slug of the ancient (src/data/ancients.ts) whose chat uses this index.
+  // Null until an admin assigns one: chat never queries an unassigned index.
+  ancient   String?
 }
 
-// At most one row may have is_active = true. Prisma can't express that, so the
-// partial unique index "Prompt_single_active_key" lives in the migration SQL
-// (prisma/migrations/*_single_active_prompt).
+// One prompt per ancient may have is_active = true. Prisma can't express that,
+// so the partial unique index "Prompt_single_active_per_ancient_key" lives in
+// the migration SQL (prisma/migrations/*_per_ancient_prompts_and_indexes).
 model Prompt {
   id        String   @id @default(cuid())
+  // Slug of the ancient (src/data/ancients.ts) this prompt is for.
+  ancient   String
   text      String
   is_active Boolean
   createdAt DateTime @default(now())

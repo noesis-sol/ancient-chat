@@ -25,7 +25,8 @@ export default async function AdminPage() {
         title: index.name,
         content: index.id,
         isActive: index.is_active,
-        weight: index.weight
+        weight: index.weight,
+        ancient: index.ancient
       };
     }) ?? [];
 

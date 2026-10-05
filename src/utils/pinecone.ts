@@ -25,8 +25,9 @@ async function getEmbedding(text: string) {
   return response.data[0].embedding;
 }
 
-export async function queryPineconeContext(question: string): Promise<ContextSource[]> {
-  const activeIndexes = await indexesService.getActiveIndexes();
+// Retrieves context for the question from the ancient's active indexes.
+export async function queryPineconeContext(question: string, ancient: string): Promise<ContextSource[]> {
+  const activeIndexes = await indexesService.getActiveIndexes(ancient);
   const totalChunks = 10;
 
   const allocation = allocateChunks(activeIndexes.map((index) => index.weight), totalChunks);

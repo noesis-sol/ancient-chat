@@ -1,5 +1,6 @@
 'use client';
 
+import { ancients } from '@/data/ancients';
 import { useEffect, useState } from 'react';
 
 interface Prompt {
@@ -7,7 +8,10 @@ interface Prompt {
   text: string;
 }
 
+const defaultAncient = (ancients.find((ancient) => ancient.isEnabled) ?? ancients[0]).slug;
+
 export default function EditPromptPage() {
+  const [ancient, setAncient] = useState(defaultAncient);
   const [text, setText] = useState('');
   const [promptId, setPromptId] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
@@ -16,21 +20,33 @@ export default function EditPromptPage() {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
+    // Ignore a response that arrives after the admin picked another ancient.
+    let ignore = false;
+    const fetchPrompt = async () => {
+      try {
+        const response = await fetch(`/api/prompt?ancient=${encodeURIComponent(ancient)}`);
+        if (!response.ok) throw new Error('Failed to fetch prompt');
+        const data: Prompt = await response.json();
+        if (ignore) return;
+        setText(data.text);
+        setPromptId(data.id);
+      } catch {
+        if (!ignore) setError('Failed to load prompt');
+      } finally {
+        if (!ignore) setIsLoading(false);
+      }
+    };
     fetchPrompt();
-  }, []);
+    return () => {
+      ignore = true;
+    };
+  }, [ancient]);
 
-  const fetchPrompt = async () => {
-    try {
-      const response = await fetch('/api/prompt');
-      if (!response.ok) throw new Error('Failed to fetch prompt');
-      const data: Prompt = await response.json();
-      setText(data.text);
-      setPromptId(data.id);
-    } catch {
-      setError('Failed to load prompt');
-    } finally {
-      setIsLoading(false);
-    }
+  const changeAncient = (slug: string) => {
+    setAncient(slug);
+    setIsLoading(true);
+    setError('');
+    setSuccess(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -72,6 +88,22 @@ export default function EditPromptPage() {
       <div className='card bg-base-100 shadow-xl'>
         <div className='card-body'>
           <h2 className='card-title text-2xl mb-6'>Edit prompt</h2>
+
+          <label className='form-control w-full max-w-xs mb-6'>
+            <span className='label-text mb-1'>Ancient</span>
+            <select
+              className='select select-bordered'
+              value={ancient}
+              onChange={(e) => changeAncient(e.target.value)}
+              disabled={isSaving}
+            >
+              {ancients.map(({ slug, name, isEnabled }) => (
+                <option key={slug} value={slug}>
+                  {isEnabled ? name : `${name} (disabled)`}
+                </option>
+              ))}
+            </select>
+          </label>
 
           {error && (
             <div className='alert alert-error mb-4'>

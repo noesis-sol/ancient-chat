@@ -1,6 +1,6 @@
 'use client';
 
-import { ancients } from '@/app/(main)/chat/ancients';
+import { ancients } from '@/data/ancients';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -9,14 +9,14 @@ export default function Chat() {
     <section className='mx-auto lg:max-w-6xl pb-1 sm:pb-5'>
       <h1 className=' text-3xl md:text-5xl font-bold text-center m-12'>Choose your philosopher!</h1>
       <div className='grid grid-cols-1 px-5 sm:grid-cols-2 md:grid-cols-3 gap-5 lg:grid-cols-4 justify-center justify-items-center'>
-        {ancients.map(({ name, image, year, isEnabled }) => {
+        {ancients.map(({ slug, name, image, year, isEnabled }) => {
           return (
             <div
               key={name}
               className='card max-sm:text-sm max-sm:card-side w-full max-sm:h-28 md:w-64 bg-base-100 shadow-xl'
             >
               <figure>
-                <Link href={`/chat/${name}`}>
+                <Link href={`/chat/${slug}`}>
                   <Image
                     src={image}
                     alt={name}
@@ -34,7 +34,7 @@ export default function Chat() {
                   <div className='card-actions'>{isEnabled ? '' : <p className='text-red-500'>Coming soon!</p>}</div>
                   {isEnabled ? (
                     <div className='text-right max-sm:mt-2'>
-                      <Link href={`/chat/${name}`} className='btn btn-primary max-sm:min-h-8 max-sm:h-8'>
+                      <Link href={`/chat/${slug}`} className='btn btn-primary max-sm:min-h-8 max-sm:h-8'>
                         Chat now
                       </Link>
                     </div>

@@ -12,6 +12,7 @@ const item = (id: string, overrides: Partial<AccordionItem> = {}): AccordionItem
   content: `Content of ${id}`,
   isActive: true,
   weight: 1,
+  ancient: null,
   ...overrides,
 });
 
