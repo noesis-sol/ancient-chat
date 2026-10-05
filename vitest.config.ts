@@ -7,8 +7,12 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  // tsconfig keeps JSX for Next ("preserve"); component tests need it compiled.
+  oxc: {
+    jsx: { runtime: 'automatic' },
+  },
   test: {
-    include: ['src/**/*.test.ts'],
+    include: ['src/**/*.test.{ts,tsx}'],
     environment: 'node',
   },
 });

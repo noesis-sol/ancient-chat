@@ -31,7 +31,7 @@ Use Node 24 (`.nvmrc`). Install with `npm ci`.
 npm run check      # everything CI runs: typecheck, lint, test, build
 npm run typecheck  # tsc --noEmit
 npm run lint       # eslint . (flat config in eslint.config.mjs)
-npm test           # vitest run (src/**/*.test.ts)
+npm test           # vitest run (src/**/*.test.{ts,tsx})
 npx vitest run src/utils/index-upload.test.ts  # one test file
 npm run build      # next build (needs the real env vars)
 ```
@@ -45,6 +45,10 @@ pushes and pull requests to `main` and `dev`.
 Put tests next to the code as `*.test.ts`. Keep logic you want to test in plain
 modules under `src/utils/` rather than in route handlers, which pull in API
 clients.
+
+React components are tested as `*.test.tsx` with `// @vitest-environment jsdom`
+at the top, rendering through `react-dom/client` and `act` and stubbing `fetch`
+(see `src/components/accordion.test.tsx`).
 
 ## Non-Interactive Shell Commands
 
