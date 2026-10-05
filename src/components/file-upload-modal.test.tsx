@@ -112,7 +112,7 @@ describe('IndexUploadModal', () => {
     expect(button('Upload Files')).toBeTruthy();
     expect(container.textContent).not.toContain('Uploading...');
     expect(container.textContent).not.toContain('/docs/a.txt');
-    expect(container.textContent).toContain('Drag and drop files or folders here');
+    expect(container.textContent).toContain('Drag and drop folders here');
     expect(closeMock).toHaveBeenCalledTimes(1);
     expect(refresh).toHaveBeenCalledTimes(1);
     expect(container.querySelector('[role=alert]')).toBeNull();

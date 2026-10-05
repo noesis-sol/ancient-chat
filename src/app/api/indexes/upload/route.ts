@@ -5,7 +5,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { env } from '@/lib/env';
 import { getIndex, getPinecone } from '@/lib/pinecone';
 import { withAdmin } from '@/utils/adminAuth';
-import { cleanMetadata, getRootFolderName, sanitizeIndexName } from '@/utils/index-upload';
+import { cleanMetadata } from '@/utils/index-upload';
+import { checkUploadPath } from '@/utils/upload-rules';
 
 // Custom error class for better error handling
 class IndexError extends Error {
@@ -43,17 +44,12 @@ export const POST = withAdmin(async (request: NextRequest) => {
             );
         }
 
-        // Get and sanitize the index name from the root folder
-        const rootFolder = getRootFolderName(path);
-        const indexName = sanitizeIndexName(rootFolder);
-
-        if (!indexName) {
-            throw new IndexError(
-                'Invalid folder name. Please use alphanumeric characters, hyphens, or underscores',
-                400,
-                'INVALID_INDEX_NAME'
-            );
+        // The folder's name becomes the index name; only .txt and .md files inside it are indexed
+        const pathCheck = checkUploadPath(path);
+        if ('code' in pathCheck) {
+            throw new IndexError(pathCheck.message, 400, pathCheck.code);
         }
+        const { indexName } = pathCheck;
 
         // Validate file size (e.g., 10MB limit)
         const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
