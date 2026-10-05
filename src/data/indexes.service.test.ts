@@ -34,7 +34,9 @@ describe('IndexesService.getActiveIndexes', () => {
     const rows = await new IndexesService().getActiveIndexes('aristotle');
 
     expect(rows).toEqual([activeRow]);
-    expect(db.index.findMany).toHaveBeenCalledWith({ where: { is_active: true, ancient: 'aristotle' } });
+    expect(db.index.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { is_active: true, ancient: 'aristotle' } })
+    );
     expect(listIndexes).not.toHaveBeenCalled();
     expect(db.$transaction).not.toHaveBeenCalled();
   });

@@ -52,12 +52,14 @@ export class IndexesService {
   }
 
   // Chat path: reads the DB only. The admin page keeps the rows in line with Pinecone.
+  // Ordered by name so allocateChunks gives a tied remainder to the same index every time.
   async getActiveIndexes(ancient: string) {
     return await this.prisma.index.findMany({
       where: {
         is_active: true,
         ancient
-      }
+      },
+      orderBy: { name: 'asc' }
     });
   }
 
