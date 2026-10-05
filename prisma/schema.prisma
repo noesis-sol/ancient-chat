@@ -13,16 +13,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Message {
-  id           String  @id @default(cuid())
-  sessionId    String
-  tool_call_id String?
-  content      String
-  role         String?
-  name         String?
-  type         String
-}
-
 model Index {
   id        String  @id
   name      String  @unique
