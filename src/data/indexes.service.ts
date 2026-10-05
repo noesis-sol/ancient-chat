@@ -7,8 +7,14 @@ import { planIndexSync } from './index-sync';
 let syncInFlight: Promise<void> | null = null;
 
 export class IndexesService {
-  private pinecone = new Pinecone();
+  private _pinecone?: Pinecone;
   private prisma = prisma;
+
+  // Created on first use: new Pinecone() throws when PINECONE_API_KEY is unset,
+  // which breaks `next build` for routes that instantiate this service at module scope.
+  private get pinecone() {
+    return (this._pinecone ??= new Pinecone());
+  }
 
   // Admin view: syncs with Pinecone first so it shows Pinecone's current indexes.
   // A failed sync is logged and the rows already in the DB are returned.

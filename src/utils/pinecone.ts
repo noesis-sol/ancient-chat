@@ -3,18 +3,27 @@ import { allocateChunks } from '@/utils/chunk-allocation';
 import { Pinecone, RecordMetadataValue } from '@pinecone-database/pinecone';
 import { OpenAI } from 'openai';
 
-const pinecone = new Pinecone({
-  apiKey: process.env.PINECONE_API_KEY!
-});
+// Clients are created on first use: constructing them at module scope throws
+// during `next build` when the API keys are unset.
+let pinecone: Pinecone | undefined;
+let openai: OpenAI | undefined;
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
+function getPinecone() {
+  return (pinecone ??= new Pinecone({
+    apiKey: process.env.PINECONE_API_KEY!
+  }));
+}
+
+function getOpenAI() {
+  return (openai ??= new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY
+  }));
+}
 
 const indexesService = new IndexesService();
 
 async function getEmbedding(text: string) {
-  const response = await openai.embeddings.create({
+  const response = await getOpenAI().embeddings.create({
     model: 'text-embedding-ada-002',
     input: text
   });
@@ -38,7 +47,7 @@ export async function queryPineconeContext(question: string): Promise<RecordMeta
 
   const results = await Promise.all(
     queries.map(({ name, topK }) =>
-      pinecone.Index(name).query({
+      getPinecone().Index(name).query({
         vector: embedding,
         topK,
         includeMetadata: true
@@ -50,5 +59,5 @@ export async function queryPineconeContext(question: string): Promise<RecordMeta
 }
 
 export async function deleteIndex(indexName: string) {
-  await pinecone.deleteIndex(indexName);
+  await getPinecone().deleteIndex(indexName);
 }
