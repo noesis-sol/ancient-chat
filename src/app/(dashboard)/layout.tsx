@@ -1,6 +1,7 @@
 import { redirectNonAdmin } from '@/utils/adminAuth';
 import { lemonMilkFont } from '@/utils/fonts';
 import { ClerkProvider } from '@clerk/nextjs';
+import { Menu } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
 import '.././globals.css';
@@ -20,7 +21,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                 aria-label='open sidebar'
                 className='btn btn-square btn-ghost lg:hidden self-start'
               >
-                <span className='material-icons'>menu</span>
+                <Menu aria-hidden='true' />
               </label>
               <div className='sm:p-10 m bg-base-200 overflow-y-auto min-h-screen'>
                 <div className='flex flex-col h-full w-full'>
