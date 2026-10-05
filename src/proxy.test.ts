@@ -11,7 +11,7 @@ vi.mock('@clerk/nextjs/server', async (importOriginal) => ({
   clerkClient: async () => ({ users: { getUser } })
 }));
 
-const { default: middleware, config } = (await import('@/middleware')) as unknown as {
+const { default: proxy, config } = (await import('@/proxy')) as unknown as {
   default: (auth: unknown, req: NextRequest) => Promise<Response | undefined>;
   config: { matcher: string[] };
 };
@@ -28,13 +28,13 @@ const fakeAuth = (userId: string | null, sessionClaims: Claims = null) => {
 const signedOut = () => fakeAuth(null);
 const signedInAs = (role: string) => fakeAuth('user_1', { metadata: { role } });
 
-const run = (auth: unknown, path: string) => middleware(auth, new NextRequest(new URL(path, 'http://localhost')));
+const run = (auth: unknown, path: string) => proxy(auth, new NextRequest(new URL(path, 'http://localhost')));
 
 beforeEach(() => {
   vi.clearAllMocks();
 });
 
-describe('middleware matcher', () => {
+describe('proxy matcher', () => {
   it.each(['/', '/chat', '/chat/plato', '/admin', '/admin/prompt', '/admin/x.y', '/chat/a.b', '/admin.json'])(
     'runs for the page %s',
     (url) => {

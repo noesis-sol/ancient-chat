@@ -6,14 +6,14 @@ vector indexes that admins build by uploading source texts.
 
 ## Architecture
 
-- **Next.js 15 (App Router)**, React 19, Tailwind 4 with daisyUI.
+- **Next.js 16 (App Router)**, React 19, Tailwind 4 with daisyUI.
   - `src/app/(main)`: public site, sign-in/up pages and the chat UI (`/chat`).
   - `src/app/(dashboard)`: admin pages (`/admin` for indexes, `/admin/prompt`
     for the system prompts).
   - `src/data/ancients.ts`: the philosophers, their slugs and which are
     enabled. The server rejects chats with unknown or disabled ones.
   - `src/app/api`: route handlers for chat, indexes, uploads and prompts.
-- **Clerk** handles authentication. `src/middleware.ts` requires sign-in for
+- **Clerk** handles authentication. `src/proxy.ts` requires sign-in for
   `/chat`. Admins are the users whose Clerk public metadata has
   `"role": "admin"`; `isAdmin` in `src/utils/adminAuth.ts` is the one check,
   used by the admin pages, the `(dashboard)` layout and the admin APIs.
@@ -287,7 +287,7 @@ PostgreSQL container, `PINECONE_CONTROLLER_HOST` and a placeholder
 `npm run e2e` starts `next start` on port 3000 (which must be free), runs
 `cypress run` once the server answers, then stops the server. `npm run e2e:open`
 does the same with the development server and Cypress's interactive runner.
-Both wait for `/favicon.ico` rather than `/`, because Clerk's middleware
+Both wait for `/favicon.ico` rather than `/`, because Clerk's proxy
 answers HTML requests for pages with a handshake redirect on development
 instances. If Cypress reports that its binary is missing (npm can skip the
 download on install), run `npx cypress install`.

@@ -8,7 +8,7 @@ const isProtectedRoute = createRouteMatcher(['/chat(.*)']);
 const isAdminPage = createRouteMatcher(['/admin(.*)']);
 const isAdminApi = createRouteMatcher(['/api/indexes(.*)', '/api/prompt(.*)']);
 
-// currentUser() is not available in middleware, so a session token without the metadata claim
+// currentUser() is not available in the proxy, so a session token without the metadata claim
 // falls back to loading the user from the Backend API.
 const loadPublicMetadata = async (userId: string): Promise<unknown> =>
   (await (await clerkClient()).users.getUser(userId)).publicMetadata;

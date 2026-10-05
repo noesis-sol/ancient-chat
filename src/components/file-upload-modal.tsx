@@ -4,7 +4,7 @@ import { countFiles, EntryReadError, processFileEntry, readUploadError, type Upl
 import { FILE_TOO_LARGE_MESSAGE, prepareDrop, SUPPORTED_EXTENSIONS } from '@/utils/upload-rules';
 import { File, Folder, Plus, Upload, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 interface ErrorState {
   message: string;
@@ -28,7 +28,6 @@ const IndexUploadModal = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [currentFile, setCurrentFile] = useState<string>('');
-  const [totalSize, setTotalSize] = useState<number>(0);
   const [uploadedSize, setUploadedSize] = useState<number>(0);
   const [isUploading, setIsUploading] = useState(false);
   const [showProgress, setShowProgress] = useState(false);
@@ -38,17 +37,10 @@ const IndexUploadModal = () => {
   const [warnings, setWarnings] = useState<string[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  useEffect(() => {
-    if (files.length > 0) {
-      const total = calculateTotalSize(files);
-      setTotalSize(total);
-    } else {
-      resetUploadState();
-    }
-  }, [files]);
+  const totalSize = calculateTotalSize(files);
 
+  // Called wherever the file list is emptied.
   const resetUploadState = () => {
-    setTotalSize(0);
     setUploadedSize(0);
     setUploadProgress(0);
     setCurrentFile('');
@@ -148,7 +140,11 @@ const IndexUploadModal = () => {
       }, []);
     };
 
-    setFiles((prev) => removeRecursively(prev));
+    const remaining = removeRecursively(files);
+    setFiles(remaining);
+    if (remaining.length === 0) {
+      resetUploadState();
+    }
   };
 
   const formatBytes = (bytes: number): string => {
@@ -409,6 +405,7 @@ const IndexUploadModal = () => {
                   className='btn btn-ghost btn-sm mt-4'
                   onClick={() => {
                     setFiles([]);
+                    resetUploadState();
                     setWarnings([]);
                   }}
                   disabled={isUploading}

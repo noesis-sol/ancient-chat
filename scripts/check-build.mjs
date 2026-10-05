@@ -21,7 +21,6 @@ for (const [name, value] of Object.entries(placeholders)) {
   }
 }
 
-// Lint already ran as its own step of `npm run check`.
 const nextBin = createRequire(import.meta.url).resolve('next/dist/bin/next');
-const result = spawnSync(process.execPath, [nextBin, 'build', '--no-lint'], { env, stdio: 'inherit' });
+const result = spawnSync(process.execPath, [nextBin, 'build'], { env, stdio: 'inherit' });
 process.exit(result.status ?? 1);

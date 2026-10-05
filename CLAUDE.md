@@ -62,6 +62,11 @@ This protocol applies when ending a Beads implementation workflow. It is subordi
 
 Use Node 24 (`.nvmrc`). Install with `npm ci`.
 
+This is Next.js 16 (App Router, Turbopack, `src/proxy.ts` instead of
+middleware). Its APIs may differ from what you know: read the guide in
+`node_modules/next/dist/docs/` before writing Next.js code. `next dev` adds a
+block saying so to AGENTS.md; keep it.
+
 ```bash
 npm run check      # everything CI runs: typecheck, lint, test, build
 npm run typecheck  # tsc --noEmit

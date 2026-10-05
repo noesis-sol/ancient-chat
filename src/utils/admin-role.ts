@@ -12,7 +12,7 @@ export type AdminAuthState = {
 
 // The one admin decision. Reads the role from the session claims when the session token carries
 // the metadata, otherwise from the user's public metadata, which the caller loads: route handlers
-// use currentUser(), middleware the Backend API.
+// use currentUser(), the proxy the Backend API.
 export const resolveAdminRole = async (
   { userId, sessionClaims }: AdminAuthState,
   loadPublicMetadata: (userId: string) => Promise<unknown>
