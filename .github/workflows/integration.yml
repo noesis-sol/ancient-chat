@@ -1,0 +1,40 @@
+name: Integration
+
+on:
+  pull_request:
+    branches: [main, dev]
+  push:
+    branches: [main, dev]
+
+jobs:
+  pinecone-local:
+    runs-on: ubuntu-latest
+    services:
+      # In-memory Pinecone emulator: the control plane on 5080, each index on
+      # its own port from 5081 up. The runner passes the range to `docker
+      # create -p` as written. The image is amd64 only, like the runner.
+      pinecone:
+        image: ghcr.io/pinecone-io/pinecone-local:latest
+        env:
+          PORT: 5080
+          PINECONE_HOST: localhost
+        ports:
+          - 5080-5090:5080-5090
+    env:
+      PINECONE_CONTROLLER_HOST: http://localhost:5080
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Wait for Pinecone Local
+        run: |
+          for _ in $(seq 1 30); do
+            curl -fsS -H 'Api-Key: local' "$PINECONE_CONTROLLER_HOST/indexes" && exit 0
+            sleep 2
+          done
+          echo "Pinecone Local did not answer on $PINECONE_CONTROLLER_HOST" >&2
+          exit 1
+      - run: npm run test:integration

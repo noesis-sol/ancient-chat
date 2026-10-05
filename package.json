@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit && tsc --noEmit -p cypress",
     "lint": "eslint .",
     "test": "vitest run",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
     "check": "npm run typecheck && npm run lint && npm run test && node scripts/check-build.mjs",
     "e2e": "start-server-and-test start http://localhost:3000/favicon.ico cypress:run",
     "e2e:open": "start-server-and-test dev http://localhost:3000/favicon.ico cypress:open",

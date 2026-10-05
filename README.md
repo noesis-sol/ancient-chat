@@ -189,6 +189,23 @@ npm test           # vitest run (src/**/*.test.ts)
 CI (`.github/workflows/check.yml`) runs `npm ci && npm run check` on pushes
 and pull requests to `main` and `dev`.
 
+### Integration tests
+
+The unit tests mock Pinecone, so they pass even when an SDK upgrade breaks
+the app at runtime. `src/**/*.integration.test.ts` runs the app's own
+Pinecone code (the upload route, the index sync, retrieval and deletes)
+against [Pinecone Local](#local-pinecone), with an in-memory database, a
+signed-in admin and fake embeddings, so it needs no secrets. Start Pinecone
+Local, then:
+
+```bash
+PINECONE_CONTROLLER_HOST=http://localhost:5080 npm run test:integration
+```
+
+Without `PINECONE_CONTROLLER_HOST` the suite is skipped, and `npm run check`
+never runs it. CI (`.github/workflows/integration.yml`) runs it against a
+Pinecone Local service container on the same pushes and pull requests.
+
 ## End-to-end tests
 
 Cypress specs in `cypress/e2e` drive the production build (`next start`)

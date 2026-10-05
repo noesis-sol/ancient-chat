@@ -32,6 +32,7 @@ npm run check      # everything CI runs: typecheck, lint, test, build
 npm run typecheck  # tsc --noEmit
 npm run lint       # eslint . (flat config in eslint.config.mjs)
 npm test           # vitest run (src/**/*.test.{ts,tsx})
+npm run test:integration  # src/**/*.integration.test.ts against Pinecone Local; skips unless PINECONE_CONTROLLER_HOST is set
 npx vitest run src/utils/index-upload.test.ts  # one test file
 npm run build      # next build (needs the real env vars)
 npm run e2e        # Cypress against the built app; needs secrets and Docker, not in check
