@@ -1,5 +1,6 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 import { prisma as sharedPrisma } from '@/lib/prisma';
+import { orNotFound } from './not-found';
 
 const defaultPrompt = {
   text: 'You are Aristotle, an ancient Greek philosopher. You are answering questions regarding everyday problems that people might face.',
@@ -43,20 +44,25 @@ export class PromptService {
     });
   }
 
+  // An unknown id throws a NotFoundError; the transaction then leaves the others active.
   async updatePrompt(id:string, { text, is_active = true }: { text: string; is_active?: boolean }) {
     const data = { text, is_active };
     if (!is_active) {
-      return await this.prisma.prompt.update({ where: { id }, data });
+      return await orNotFound(() => this.prisma.prompt.update({ where: { id }, data }), `Prompt "${id}" not found`);
     }
 
     // Deactivate the others first: the unique index is checked per statement.
-    const [, prompt] = await this.prisma.$transaction([
-      this.prisma.prompt.updateMany({
-        where: { is_active: true, id: { not: id } },
-        data: { is_active: false }
-      }),
-      this.prisma.prompt.update({ where: { id }, data })
-    ]);
+    const [, prompt] = await orNotFound(
+      () =>
+        this.prisma.$transaction([
+          this.prisma.prompt.updateMany({
+            where: { is_active: true, id: { not: id } },
+            data: { is_active: false }
+          }),
+          this.prisma.prompt.update({ where: { id }, data })
+        ]),
+      `Prompt "${id}" not found`
+    );
     return prompt;
   }
 

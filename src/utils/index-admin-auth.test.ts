@@ -89,11 +89,11 @@ const routes: Route[] = [
   {
     name: 'PUT /api/indexes/[name]',
     call: () =>
-      PUT(jsonRequest('http://localhost/api/indexes/plato', 'PUT', { title: 'Plato', topK: 5 }), nameParams()),
+      PUT(jsonRequest('http://localhost/api/indexes/plato', 'PUT', { weight: 0.5 }), nameParams()),
     effects: () => [indexes.updateIndex],
     admin: async (response) => {
       expect(response.status).toBe(200);
-      expect(indexes.updateIndex).toHaveBeenCalledWith('plato', { title: 'Plato', topK: 5 });
+      expect(indexes.updateIndex).toHaveBeenCalledWith('plato', { weight: 0.5 });
     }
   },
   {

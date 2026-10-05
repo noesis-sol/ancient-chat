@@ -3,6 +3,7 @@ import { getPinecone } from '@/lib/pinecone';
 import { prisma } from '@/lib/prisma';
 import { Index } from '@prisma/client';
 import { planIndexSync } from './index-sync';
+import { NotFoundError, orNotFound } from './not-found';
 
 // The sync in flight in this process, shared so concurrent admin loads run it once.
 let syncInFlight: Promise<void> | null = null;
@@ -36,13 +37,18 @@ export class IndexesService {
     });
   }
 
-  async updateIndex(name: string, data: Index) {
-    return await this.prisma.index.update({
-      where: {
-        name
-      },
-      data,
-    });
+  // Only the weight is editable; id and name follow Pinecone through the sync.
+  async updateIndex(name: string, { weight }: { weight: number }) {
+    return await orNotFound(
+      () =>
+        this.prisma.index.update({
+          where: {
+            name
+          },
+          data: { weight },
+        }),
+      `Index "${name}" not found`
+    );
   }
 
   // Chat path: reads the DB only. The admin page keeps the rows in line with Pinecone.
@@ -55,14 +61,18 @@ export class IndexesService {
   }
 
   async toggleIndex(name: string, isActive: boolean) {
-    return await this.prisma.index.update({
-      where: {
-        name
-      },
-      data: {
-        is_active: isActive
-      }
-    });
+    return await orNotFound(
+      () =>
+        this.prisma.index.update({
+          where: {
+            name
+          },
+          data: {
+            is_active: isActive
+          }
+        }),
+      `Index "${name}" not found`
+    );
   }
 
   async deleteIndex(name: string) {
@@ -73,15 +83,19 @@ export class IndexesService {
     });
 
     if (!index) {
-      throw new Error(`Index with id ${name} not found`);
+      throw new NotFoundError(`Index "${name}" not found`);
     }
 
     await getPinecone().deleteIndex(index.name);
-    return await this.prisma.index.delete({
-      where: {
-        name
-      }
-    });
+    return await orNotFound(
+      () =>
+        this.prisma.index.delete({
+          where: {
+            name
+          }
+        }),
+      `Index "${name}" not found`
+    );
   }
 
   private syncDatabaseIndexes(): Promise<void> {
