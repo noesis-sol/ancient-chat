@@ -60,13 +60,26 @@ This protocol applies when ending a Beads implementation workflow. It is subordi
 
 ## Build & Test
 
-_Add your build and test commands here_
+Use Node 24 (`.nvmrc`). Install with `npm ci`.
 
 ```bash
-# Example:
-# npm install
-# npm test
+npm run check      # everything CI runs: typecheck, lint, test, build
+npm run typecheck  # tsc --noEmit
+npm run lint       # eslint . (flat config in eslint.config.mjs)
+npm test           # vitest run (src/**/*.test.ts)
+npx vitest run src/utils/index-upload.test.ts  # one test file
+npm run build      # next build (needs the real env vars)
 ```
+
+`npm run check` builds through `scripts/check-build.mjs`, which loads the `.env`
+files and fills in placeholders for `PINECONE_API_KEY`, `OPENAI_API_KEY` and
+`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` when they are unset, so it runs without
+secrets. CI (`.github/workflows/check.yml`) runs `npm ci && npm run check` on
+pushes and pull requests to `main` and `dev`.
+
+Put tests next to the code as `*.test.ts`. Keep logic you want to test in plain
+modules under `src/utils/` rather than in route handlers, which pull in API
+clients.
 
 ## Architecture Overview
 
