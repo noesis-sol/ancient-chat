@@ -322,6 +322,11 @@ Set the variables from `.env.example` in the host's environment, run
 `npx prisma migrate deploy` against the production database before starting
 the new version, and build with the production Clerk publishable key.
 
+On Vercel, `vercel.json` turns on fluid compute, which lets the upload route
+run for up to 300 s (`maxDuration` in `src/app/api/indexes/upload/route.ts`)
+on the Hobby plan, where functions otherwise stop after 60 s at most. Embedding
+a 4 MB file can take over a minute.
+
 ## Authors
 
 Andreas Neofytou

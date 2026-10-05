@@ -9,10 +9,11 @@ import { EMBEDDING_MODEL_TAG, embeddingModelOf } from '@/utils/embedding-model';
 import { replaceFileChunks } from '@/utils/upload-chunks';
 import { checkUploadPath, FILE_TOO_LARGE_MESSAGE, MAX_UPLOAD_FILE_SIZE } from '@/utils/upload-rules';
 
-// Creating an index and waiting until it is ready takes up to 30 s, and
-// embedding a large file takes a while too. 60 s is the most Vercel allows on
-// the Hobby plan without fluid compute (the default is 10 s).
-export const maxDuration = 60;
+// Creating an index and waiting until it is ready takes up to 30 s, and a
+// 4 MB file is ~5000 chunks, i.e. ~50 embeddings requests and upserts in a row,
+// which can take longer than a minute. 300 s is the most Vercel allows on the
+// Hobby plan, and only with fluid compute (vercel.json); without it, 60 s.
+export const maxDuration = 300;
 
 // Custom error class for better error handling
 class IndexError extends Error {
