@@ -34,8 +34,7 @@ export default async function AdminPage() {
       <div className='flex justify-end'>
         <IndexUploadModal />
       </div>
-      {/* AccordionSection copies data into state once; remount it when router.refresh() changes the set of indexes. */}
-      <AccordionSection key={myAccordionData.map((item) => item.id).join(',')} data={myAccordionData} />
+      <AccordionSection data={myAccordionData} />
     </div>
   );
 }
