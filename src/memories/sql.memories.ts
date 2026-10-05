@@ -1,7 +1,7 @@
 import { BaseChatMessageHistory } from '@langchain/core/chat_history';
 import { BaseMessage, mapStoredMessagesToChatMessages, StoredMessage } from '@langchain/core/messages';
-import { PrismaClient } from '@prisma/client';
 import { BufferMemory } from 'langchain/memory';
+import { prisma } from '@/lib/prisma';
 
 export interface CustomChatMessageHistoryInput {
     sessionId: string;
@@ -9,7 +9,7 @@ export interface CustomChatMessageHistoryInput {
 
 export class SqlMessageHistory extends BaseChatMessageHistory {
     private readonly sessionId: string;
-    private prisma = new PrismaClient();
+    private prisma = prisma;
 
     lc_namespace = ['langchain', 'stores', 'message'];
 

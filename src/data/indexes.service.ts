@@ -1,9 +1,10 @@
 import { IndexList, Pinecone } from '@pinecone-database/pinecone';
-import { Index, PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
+import { Index } from '@prisma/client';
 
 export class IndexesService {
   private pinecone = new Pinecone();
-  private prisma = new PrismaClient();
+  private prisma = prisma;
 
   async getIndexes() {
     await this.updateDatabaseIndexes();

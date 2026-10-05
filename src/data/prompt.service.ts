@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 
 const defaultPrompt = {
   text: 'You are Aristotle, an ancient Greek philosopher. You are answering questions regarding everyday problems that people might face.',
@@ -6,7 +6,7 @@ const defaultPrompt = {
 };
 
 export class PromptService {
-  private prisma = new PrismaClient();
+  private prisma = prisma;
 
   async getPrompt() {
     let prompt = await this.prisma.prompt.findFirst({ where: { is_active: true } });

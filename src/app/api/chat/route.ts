@@ -5,9 +5,10 @@ import { currentUser, getAuth } from '@clerk/nextjs/server';
 import { CoreMessage, streamText } from 'ai';
 import { NextRequest, NextResponse } from 'next/server';
 
+const promptService = new PromptService();
+
 const  getPrompt = async (userName: string, context: string) => {
-  const service = new PromptService();
-  const customPrompt = await service.getPrompt();
+  const customPrompt = await promptService.getPrompt();
 
   return `${customPrompt.text}\n
     Answer in the first person to a person called ${userName}.

@@ -5,8 +5,9 @@ import { adminEmails } from '@/utils/emails';
 import { currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 
+const indexesService = new IndexesService();
+
 export default async function AdminPage() {
-  const indexesService = new IndexesService();
   const user = await currentUser();
 
   if (!user || !user?.emailAddresses?.some((email) => adminEmails.includes(email.emailAddress))) {
