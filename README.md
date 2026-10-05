@@ -18,16 +18,24 @@ vector indexes that admins build by uploading source texts.
   `"role": "admin"`; `isAdmin` in `src/utils/adminAuth.ts` is the one check,
   used by the admin pages, the `(dashboard)` layout and the admin APIs.
 - **PostgreSQL via Prisma 7** (`prisma/schema.prisma`, `prisma.config.ts`)
-  stores the indexes' ancient, active flag and weight (`Index`) and each
-  ancient's system prompt (`Prompt`).
+  stores the indexes' ancient, active flag, weight and embedding model
+  (`Index`) and each ancient's system prompt (`Prompt`).
 - **Pinecone** holds one serverless vector index per uploaded source folder.
   An upload splits each file into chunks, embeds them with OpenAI
-  (`text-embedding-ada-002`, 1536 dimensions) and upserts them into the index
-  named after the folder, creating it if needed.
+  (`EMBEDDING_MODEL`, default `text-embedding-ada-002`, 1536 dimensions) and
+  upserts them into the index named after the folder, creating it if needed.
+  `src/lib/embeddings.ts` embeds both the chunks and the chat questions.
+- **Embedding model**: a new index is tagged in Pinecone with the model that
+  embedded it (`embedding_model`), and the index sync copies the tag into
+  `Index.embedding_model`; indexes made before the tag count as
+  `text-embedding-ada-002`. Chat skips active indexes of another model than
+  `EMBEDDING_MODEL`, and an upload into one is refused. Changing
+  `EMBEDDING_MODEL` therefore means uploading the sources again into new
+  indexes (or deleting the old ones first).
 - **Chat** (`src/app/api/chat/route.ts`, `POST /api/chat?ancient=<slug>`):
   embeds the user's last message, queries that ancient's active indexes for 10
   passages split by index weight (`src/utils/pinecone.ts`), and streams a
-  `gpt-4o-mini` answer through the Vercel AI SDK, with the ancient's active
+  `CHAT_MODEL` (default `gpt-4o-mini`) answer through the Vercel AI SDK, with the ancient's active
   prompt and the passages as the system message.
 - **Environment** is validated at server startup (`src/instrumentation.ts`,
   `src/lib/env.ts`).
@@ -61,6 +69,8 @@ Pinecone, OpenAI and Clerk.
    | `CLERK_SECRET_KEY` | yes | Clerk secret key (`sk_...`) |
    | `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | no | `/sign-in`, to use the app's sign-in page instead of Clerk's hosted one |
    | `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | no | `/sign-up`, likewise for sign-up |
+   | `CHAT_MODEL` | no | OpenAI model that answers in the chat (default `gpt-4o-mini`) |
+   | `EMBEDDING_MODEL` | no | OpenAI embedding model (default `text-embedding-ada-002`); changing it needs re-indexing, see Architecture |
    | `PINECONE_CLOUD` | no | Cloud for new Pinecone indexes: `aws` (default), `gcp` or `azure` |
    | `PINECONE_REGION` | no | Region for new Pinecone indexes (default `us-east-1`) |
    | `PINECONE_CONTROLLER_HOST` | no | Pinecone Local's URL (`http://localhost:5080`) instead of Pinecone's cloud, see [Local Pinecone](#local-pinecone) |

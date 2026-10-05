@@ -33,6 +33,9 @@ function sync(rows: IndexRow[], pinecone: PineconeIndexRef[]) {
   return apply(rows, planIndexSync(rows, pinecone));
 }
 
+// The model of untagged indexes.
+const ada = 'text-embedding-ada-002';
+
 const byName = (rows: IndexRow[]) => [...rows].sort((a, b) => a.name.localeCompare(b.name));
 
 describe('planIndexSync', () => {
@@ -42,13 +45,13 @@ describe('planIndexSync', () => {
     assert.deepEqual(plan, {
       deletes: [],
       updates: [],
-      creates: [{ id: 'plato-1.pinecone.io', name: 'plato', is_active: false, weight: 1 }]
+      creates: [{ id: 'plato-1.pinecone.io', name: 'plato', is_active: false, weight: 1, embedding_model: ada }]
     });
     assert.deepEqual(NEW_INDEX_DEFAULTS, { is_active: false, weight: 1 });
   });
 
   it('does nothing when the DB already matches Pinecone', () => {
-    const rows = [{ id: 'plato-1.pinecone.io', name: 'plato', is_active: true, weight: 3 }];
+    const rows = [{ id: 'plato-1.pinecone.io', name: 'plato', is_active: true, weight: 3, embedding_model: ada }];
 
     assert.deepEqual(planIndexSync(rows, [{ name: 'plato', host: 'plato-1.pinecone.io' }]), {
       deletes: [],
@@ -59,8 +62,8 @@ describe('planIndexSync', () => {
 
   it('keeps is_active and weight when an index is recreated with the same name', () => {
     const rows = [
-      { id: 'plato-old.pinecone.io', name: 'plato', is_active: true, weight: 2.5 },
-      { id: 'homer-1.pinecone.io', name: 'homer', is_active: false, weight: 1 }
+      { id: 'plato-old.pinecone.io', name: 'plato', is_active: true, weight: 2.5, embedding_model: ada },
+      { id: 'homer-1.pinecone.io', name: 'homer', is_active: false, weight: 1, embedding_model: ada }
     ];
     const pinecone = [
       { name: 'plato', host: 'plato-new.pinecone.io' },
@@ -70,41 +73,41 @@ describe('planIndexSync', () => {
     const plan = planIndexSync(rows, pinecone);
     assert.deepEqual(plan, {
       deletes: [],
-      updates: [{ id: 'plato-old.pinecone.io', data: { id: 'plato-new.pinecone.io', name: 'plato' } }],
+      updates: [{ id: 'plato-old.pinecone.io', data: { id: 'plato-new.pinecone.io', name: 'plato', embedding_model: ada } }],
       creates: []
     });
     assert.deepEqual(byName(apply(rows, plan)), [
-      { id: 'homer-1.pinecone.io', name: 'homer', is_active: false, weight: 1 },
-      { id: 'plato-new.pinecone.io', name: 'plato', is_active: true, weight: 2.5 }
+      { id: 'homer-1.pinecone.io', name: 'homer', is_active: false, weight: 1, embedding_model: ada },
+      { id: 'plato-new.pinecone.io', name: 'plato', is_active: true, weight: 2.5, embedding_model: ada }
     ]);
   });
 
   it('keeps settings when a host is listed under a new name', () => {
-    const rows = [{ id: 'h1.pinecone.io', name: 'plato', is_active: true, weight: 4 }];
+    const rows = [{ id: 'h1.pinecone.io', name: 'plato', is_active: true, weight: 4, embedding_model: ada }];
 
     assert.deepEqual(sync(rows, [{ name: 'aristotle', host: 'h1.pinecone.io' }]), [
-      { id: 'h1.pinecone.io', name: 'aristotle', is_active: true, weight: 4 }
+      { id: 'h1.pinecone.io', name: 'aristotle', is_active: true, weight: 4, embedding_model: ada }
     ]);
   });
 
   it('frees a name before another host takes it', () => {
     // 'plato' moved to a new host and its old host now serves 'aristotle'.
-    const rows = [{ id: 'h1.pinecone.io', name: 'plato', is_active: true, weight: 4 }];
+    const rows = [{ id: 'h1.pinecone.io', name: 'plato', is_active: true, weight: 4, embedding_model: ada }];
     const pinecone = [
       { name: 'plato', host: 'h2.pinecone.io' },
       { name: 'aristotle', host: 'h1.pinecone.io' }
     ];
 
     assert.deepEqual(byName(sync(rows, pinecone)), [
-      { id: 'h1.pinecone.io', name: 'aristotle', is_active: false, weight: 1 },
-      { id: 'h2.pinecone.io', name: 'plato', is_active: true, weight: 4 }
+      { id: 'h1.pinecone.io', name: 'aristotle', is_active: false, weight: 1, embedding_model: ada },
+      { id: 'h2.pinecone.io', name: 'plato', is_active: true, weight: 4, embedding_model: ada }
     ]);
   });
 
   it('deletes rows for indexes removed from Pinecone', () => {
     const rows = [
-      { id: 'h1.pinecone.io', name: 'plato', is_active: true, weight: 1 },
-      { id: 'h2.pinecone.io', name: 'homer', is_active: true, weight: 1 }
+      { id: 'h1.pinecone.io', name: 'plato', is_active: true, weight: 1, embedding_model: ada },
+      { id: 'h2.pinecone.io', name: 'homer', is_active: true, weight: 1, embedding_model: ada }
     ];
     // 'homer' is gone and 'sappho' is new.
     const pinecone = [
@@ -115,13 +118,13 @@ describe('planIndexSync', () => {
     const plan = planIndexSync(rows, pinecone);
     assert.deepEqual(plan.deletes, ['h2.pinecone.io']);
     assert.deepEqual(byName(apply(rows, plan)), [
-      { id: 'h1.pinecone.io', name: 'plato', is_active: true, weight: 1 },
-      { id: 'h3.pinecone.io', name: 'sappho', is_active: false, weight: 1 }
+      { id: 'h1.pinecone.io', name: 'plato', is_active: true, weight: 1, embedding_model: ada },
+      { id: 'h3.pinecone.io', name: 'sappho', is_active: false, weight: 1, embedding_model: ada }
     ]);
   });
 
   it('deletes every row when Pinecone has no indexes', () => {
-    const rows = [{ id: 'h1.pinecone.io', name: 'plato', is_active: true, weight: 1 }];
+    const rows = [{ id: 'h1.pinecone.io', name: 'plato', is_active: true, weight: 1, embedding_model: ada }];
 
     assert.deepEqual(sync(rows, []), []);
   });

@@ -16,13 +16,17 @@ datasource db {
 }
 
 model Index {
-  id        String  @id
-  name      String  @unique
-  is_active Boolean
-  weight    Float
+  id              String  @id
+  name            String  @unique
+  is_active       Boolean
+  weight          Float
   // Slug of the ancient (src/data/ancients.ts) whose chat uses this index.
   // Null until an admin assigns one: chat never queries an unassigned index.
-  ancient   String?
+  ancient         String?
+  // The model that embedded the index's vectors, from its Pinecone tag
+  // (src/utils/embedding-model.ts). Chat skips indexes whose model differs
+  // from EMBEDDING_MODEL.
+  embedding_model String  @default("text-embedding-ada-002")
 }
 
 // One prompt per ancient may have is_active = true. Prisma can't express that,

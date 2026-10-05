@@ -25,6 +25,8 @@ describe('parseEnv', () => {
       ...valid,
       PINECONE_CLOUD: 'aws',
       PINECONE_REGION: 'us-east-1',
+      CHAT_MODEL: 'gpt-4o-mini',
+      EMBEDDING_MODEL: 'text-embedding-ada-002',
       CHAT_RATE_LIMIT_PER_MINUTE: 20,
       CHAT_RATE_LIMIT_PER_DAY: 200,
     });

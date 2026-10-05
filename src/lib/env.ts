@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { DEFAULT_EMBEDDING_MODEL } from '@/utils/embedding-model';
 
 // Server-side environment, validated once at startup (src/instrumentation.ts) so
 // a missing or malformed variable stops the server with a message naming it,
@@ -104,6 +105,16 @@ const envSchema = z.object({
   CLERK_SECRET_KEY: required().refine((value) => value.startsWith('sk_'), {
     message: 'must be a Clerk secret key (sk_...)',
   }),
+  // OpenAI models. Changing EMBEDDING_MODEL needs the indexes re-uploaded:
+  // chat skips indexes embedded with another model.
+  CHAT_MODEL: withDefault(z.string().trim(), 'gpt-4o-mini'),
+  // Recorded as a Pinecone index tag, so it takes only the tag's characters.
+  EMBEDDING_MODEL: withDefault(
+    z.string().trim().regex(/^[\w.@;+ -]{1,120}$/, {
+      message: 'must be a model name of letters, digits and . _ - @ ; +',
+    }),
+    DEFAULT_EMBEDDING_MODEL
+  ),
   // Where the upload route creates new serverless Pinecone indexes.
   PINECONE_CLOUD: withDefault(
     z.enum(['aws', 'gcp', 'azure'], { errorMap: () => ({ message: 'must be aws, gcp or azure' }) }),

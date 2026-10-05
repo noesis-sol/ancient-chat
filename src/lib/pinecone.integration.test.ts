@@ -21,7 +21,7 @@ const fakes = vi.hoisted(() => {
     return values;
   };
 
-  type Row = { id: string; name: string; is_active: boolean; weight: number; ancient: string | null };
+  type Row = { id: string; name: string; is_active: boolean; weight: number; ancient: string | null; embedding_model: string };
   type Where = Partial<Record<keyof Row, unknown>>;
   type OrderBy = Partial<Record<keyof Row, 'asc' | 'desc'>>;
 
@@ -112,22 +112,12 @@ vi.mock('@clerk/nextjs/server', () => ({
   currentUser: async () => ({ publicMetadata: { role: 'admin' } })
 }));
 
-// The upload route embeds chunks through LangChain, queryPineconeContext the
-// question through the OpenAI client.
-vi.mock('@langchain/openai', () => ({
-  OpenAIEmbeddings: class {
-    async embedDocuments(texts: string[]) {
-      return texts.map(fakes.embedding);
-    }
-  }
-}));
-
-vi.mock('openai', () => ({
-  OpenAI: class {
-    embeddings = {
-      create: async ({ input }: { input: string }) => ({ data: [{ embedding: fakes.embedding(input) }] })
-    };
-  }
+// src/lib/embeddings.ts embeds the upload route's chunks with embedMany and
+// queryPineconeContext's question with embed.
+vi.mock('ai', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('ai')>()),
+  embedMany: async ({ values }: { values: string[] }) => ({ embeddings: values.map(fakes.embedding) }),
+  embed: async ({ value }: { value: string }) => ({ embedding: fakes.embedding(value) })
 }));
 
 const { POST: upload } = await import('@/app/api/indexes/upload/route');
@@ -216,7 +206,10 @@ describe.skipIf(!controllerHost)('Pinecone Local integration', () => {
         name: index,
         is_active: false,
         weight: 1,
-        ancient: null
+        ancient: null,
+        // The upload tags the index with EMBEDDING_MODEL (the default here).
+        // Pinecone Local drops tags, and an untagged index reads as the default.
+        embedding_model: 'text-embedding-ada-002'
       });
     }
   });

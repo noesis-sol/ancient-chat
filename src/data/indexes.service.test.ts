@@ -21,7 +21,7 @@ vi.mock('@/lib/prisma', () => ({ prisma: db }));
 
 import { IndexesService } from './indexes.service';
 
-const activeRow = { id: 'host-a', name: 'a', is_active: true, weight: 1 };
+const activeRow = { id: 'host-a', name: 'a', is_active: true, weight: 1, embedding_model: 'text-embedding-ada-002' };
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -56,10 +56,10 @@ describe('IndexesService.getIndexes', () => {
     expect(db.$transaction).toHaveBeenCalledOnce();
     expect(db.index.updateMany).toHaveBeenCalledWith({
       where: { id: 'host-a' },
-      data: { id: 'host-a2', name: 'a' }
+      data: { id: 'host-a2', name: 'a', embedding_model: 'text-embedding-ada-002' }
     });
     expect(db.index.createMany).toHaveBeenCalledWith({
-      data: [{ id: 'host-b', name: 'b', is_active: false, weight: 1 }],
+      data: [{ id: 'host-b', name: 'b', embedding_model: 'text-embedding-ada-002', is_active: false, weight: 1 }],
       skipDuplicates: true
     });
   });

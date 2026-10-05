@@ -1,20 +1,24 @@
+import { embeddingModelOf } from '@/utils/embedding-model';
+
 export interface IndexRow {
   id: string;
   name: string;
   is_active: boolean;
   weight: number;
+  embedding_model: string;
 }
 
 export interface PineconeIndexRef {
   name: string;
   host: string;
+  tags?: Record<string, string>;
 }
 
 export interface IndexSyncPlan {
   // Ids of rows whose index is gone from Pinecone.
   deletes: string[];
-  // Rows whose host (id) or name changed; is_active and weight are kept.
-  updates: { id: string; data: { id: string; name: string } }[];
+  // Rows whose host (id), name or embedding model changed; is_active and weight are kept.
+  updates: { id: string; data: { id: string; name: string; embedding_model: string } }[];
   creates: IndexRow[];
 }
 
@@ -62,10 +66,11 @@ export function planIndexSync(existing: IndexRow[], pinecone: PineconeIndexRef[]
 
   for (const index of pinecone) {
     const row = matched.get(index);
+    const data = { id: index.host, name: index.name, embedding_model: embeddingModelOf(index) };
     if (!row) {
-      plan.creates.push({ id: index.host, name: index.name, ...NEW_INDEX_DEFAULTS });
-    } else if (row.id !== index.host || row.name !== index.name) {
-      plan.updates.push({ id: row.id, data: { id: index.host, name: index.name } });
+      plan.creates.push({ ...data, ...NEW_INDEX_DEFAULTS });
+    } else if (row.id !== data.id || row.name !== data.name || row.embedding_model !== data.embedding_model) {
+      plan.updates.push({ id: row.id, data });
     }
   }
 

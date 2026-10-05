@@ -41,12 +41,12 @@ vi.mock('@clerk/nextjs/server', () => ({
   currentUser: async () => ({ publicMetadata: { role: 'admin' } })
 }));
 
-vi.mock('@langchain/openai', () => ({
-  OpenAIEmbeddings: class {
-    async embedDocuments(texts: string[]) {
-      fakes.requests.push(texts);
-      return texts.map(fakes.embedding);
-    }
+// src/lib/embeddings.ts embeds each batch with one embedMany call.
+vi.mock('ai', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('ai')>()),
+  embedMany: async ({ values }: { values: string[] }) => {
+    fakes.requests.push(values);
+    return { embeddings: values.map(fakes.embedding) };
   }
 }));
 

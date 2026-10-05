@@ -1,5 +1,6 @@
 import { Ancient, findEnabledAncient } from '@/data/ancients';
 import { PromptService } from '@/data/prompt.service';
+import { chatModel } from '@/lib/openai';
 import { chatRateLimiters } from '@/lib/rate-limit';
 import {
   chatStreamResponse,
@@ -10,7 +11,6 @@ import {
 } from '@/utils/chat-request';
 import { queryPineconeContext } from '@/utils/pinecone';
 import { checkRateLimits, rateLimitedResponse } from '@/utils/rate-limit';
-import { openai } from '@ai-sdk/openai';
 import { currentUser, getAuth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
     const instructions = await getPrompt(ancient, sanitizeUserName(user?.firstName), context);
 
     return await chatStreamResponse({
-      model: openai('gpt-4o-mini'),
+      model: chatModel(),
       instructions,
       messages: chatRequest.messages,
       sources,

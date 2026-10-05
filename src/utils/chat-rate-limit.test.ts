@@ -10,6 +10,8 @@ const rateLimit = vi.hoisted(() => ({ chatRateLimiters: vi.fn() }));
 
 vi.mock('@clerk/nextjs/server', () => clerk);
 vi.mock('@/utils/pinecone', () => pinecone);
+// chatModel reads CHAT_MODEL and the key from env(); chatStreamResponse is a stub.
+vi.mock('@/lib/openai', () => ({ chatModel: () => 'chat-model' }));
 vi.mock('@/lib/rate-limit', () => rateLimit);
 vi.mock('@/data/prompt.service', () => ({
   PromptService: class {

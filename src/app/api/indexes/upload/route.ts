@@ -1,10 +1,11 @@
 import { Document } from '@langchain/core/documents';
-import { OpenAIEmbeddings } from '@langchain/openai';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 import { NextRequest, NextResponse } from 'next/server';
+import { embedDocuments, embeddingDimension } from '@/lib/embeddings';
 import { env } from '@/lib/env';
 import { getIndex, getPinecone } from '@/lib/pinecone';
 import { withAdmin } from '@/utils/adminAuth';
+import { EMBEDDING_MODEL_TAG, embeddingModelOf } from '@/utils/embedding-model';
 import { replaceFileChunks } from '@/utils/upload-chunks';
 import { checkUploadPath, FILE_TOO_LARGE_MESSAGE, MAX_UPLOAD_FILE_SIZE } from '@/utils/upload-rules';
 
@@ -90,20 +91,35 @@ export const POST = withAdmin(async (request: NextRequest) => {
         }
         
         // Check if index exists, if not create it
-        if (!indexList.indexes?.find(index => index.name === indexName)) {
+        const embeddingModel = env().EMBEDDING_MODEL;
+        const existingIndex = indexList.indexes?.find(index => index.name === indexName);
+        if (existingIndex) {
+            // Vectors from two models in one index would never match the same query
+            const indexModel = embeddingModelOf(existingIndex);
+            if (indexModel !== embeddingModel) {
+                throw new IndexError(
+                    `Index "${indexName}" was embedded with ${indexModel}, but EMBEDDING_MODEL is ${embeddingModel}. ` +
+                        'Upload into a new folder, or delete the index and upload all of its files again.',
+                    409,
+                    'EMBEDDING_MODEL_MISMATCH'
+                );
+            }
+        } else {
             try {
                 // A concurrent upload into the same new folder may create it first
                 await pinecone.createIndex({
                     suppressConflicts: true,
                     name: indexName,
-                    dimension: 1536,
+                    dimension: await embeddingDimension(),
                     metric: 'cosine',
                     spec: {
                         serverless: {
                             cloud: env().PINECONE_CLOUD,
                             region: env().PINECONE_REGION
                         }
-                    }
+                    },
+                    // Read back by the index sync, so chat can skip indexes of another model
+                    tags: { [EMBEDDING_MODEL_TAG]: embeddingModel }
                 });
 
                 // Wait for index to be ready with timeout
@@ -141,11 +157,6 @@ export const POST = withAdmin(async (request: NextRequest) => {
         // Get the index
         const index = await getIndex(indexName);
 
-        // Initialize OpenAI embeddings
-        const embeddings = new OpenAIEmbeddings({
-            openAIApiKey: env().OPENAI_API_KEY,
-        });
-
         // Initialize text splitter
         const textSplitter = new RecursiveCharacterTextSplitter({
             chunkSize: 1000,
@@ -167,7 +178,7 @@ export const POST = withAdmin(async (request: NextRequest) => {
 
         // Embed and upsert the chunks in batches, then delete the ones a longer earlier upload left
         try {
-            await replaceFileChunks(index, path, docs, (texts) => embeddings.embedDocuments(texts));
+            await replaceFileChunks(index, path, docs, embedDocuments);
         } catch (error) {
             console.error('Error upserting chunks:', error);
             throw new IndexError(
