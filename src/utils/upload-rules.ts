@@ -7,6 +7,14 @@ export const MAX_INDEX_NAME_LENGTH = 45;
 /** Only plain text is indexed: the route reads every file with file.text(). */
 export const SUPPORTED_EXTENSIONS = ['.txt', '.md'];
 
+/**
+ * Vercel Functions reject request bodies over 4.5 MB with a 413 before the
+ * route runs, so files are capped at 4 MB, leaving room for the multipart form.
+ */
+const MAX_UPLOAD_FILE_MB = 4;
+export const MAX_UPLOAD_FILE_SIZE = MAX_UPLOAD_FILE_MB * 1024 * 1024;
+export const FILE_TOO_LARGE_MESSAGE = `File size exceeds the maximum limit of ${MAX_UPLOAD_FILE_MB} MB`;
+
 /** OS files that turn up inside dropped folders. Dotfiles are ignored as well. */
 const JUNK_FILES = new Set(['.ds_store', 'thumbs.db', 'desktop.ini']);
 
@@ -89,21 +97,30 @@ const listPaths = (paths: string[]): string =>
     ? `${paths.slice(0, MAX_LISTED_FILES).join(', ')} and ${paths.length - MAX_LISTED_FILES} more`
     : paths.join(', ');
 
+interface SkippedFiles {
+  unsupported: string[];
+  tooLarge: string[];
+}
+
 /**
- * Keeps the .txt and .md files of a dropped folder. Hidden and system files are
- * left out silently, other files with a warning naming them, and folders left
- * empty are dropped.
+ * Keeps the .txt and .md files of a dropped folder that are small enough to
+ * upload. Hidden and system files are left out silently, other files with a
+ * warning naming them, and folders left empty are dropped.
  */
-const filterFolder = (folder: FolderItem, unsupported: string[]): FolderItem => ({
+const filterFolder = (folder: FolderItem, skipped: SkippedFiles): FolderItem => ({
   ...folder,
   children: folder.children.flatMap((child): UploadItem[] => {
     if (isIgnoredName(child.type === 'file' ? child.file.name : child.name)) return [];
     if (child.type === 'folder') {
-      const filtered = filterFolder(child, unsupported);
+      const filtered = filterFolder(child, skipped);
       return filtered.children.length ? [filtered] : [];
     }
     if (!isSupportedFile(child.file.name)) {
-      unsupported.push(child.path);
+      skipped.unsupported.push(child.path);
+      return [];
+    }
+    if (child.file.size > MAX_UPLOAD_FILE_SIZE) {
+      skipped.tooLarge.push(child.path);
       return [];
     }
     return [child];
@@ -124,18 +141,21 @@ export const prepareDrop = (items: UploadItem[]): PreparedDrop => {
     return reject({ code: 'LOOSE_FILE', message: LOOSE_FILE_MESSAGE, filePath: looseFile.path });
   }
 
-  const unsupported: string[] = [];
+  const skipped: SkippedFiles = { unsupported: [], tooLarge: [] };
   const folders: FolderItem[] = [];
   for (const item of dropped as FolderItem[]) {
     const check = checkIndexName(item.name);
     if ('code' in check) return reject({ ...check, filePath: item.path });
-    const folder = filterFolder(item, unsupported);
+    const folder = filterFolder(item, skipped);
     if (folder.children.length) folders.push(folder);
   }
 
   const warnings: string[] = [];
-  if (unsupported.length) {
-    warnings.push(`Skipped files that are not ${SUPPORTED_EXTENSIONS.join(' or ')}: ${listPaths(unsupported)}`);
+  if (skipped.unsupported.length) {
+    warnings.push(`Skipped files that are not ${SUPPORTED_EXTENSIONS.join(' or ')}: ${listPaths(skipped.unsupported)}`);
+  }
+  if (skipped.tooLarge.length) {
+    warnings.push(`Skipped files over ${MAX_UPLOAD_FILE_MB} MB: ${listPaths(skipped.tooLarge)}`);
   }
   for (const [indexName, names] of findIndexNameCollisions(folders.map((folder) => folder.name))) {
     const quoted = names.map((name) => `"${name}"`).join(' and ');
@@ -148,7 +168,7 @@ export const prepareDrop = (items: UploadItem[]): PreparedDrop => {
       warnings,
       error: {
         code: 'NO_SUPPORTED_FILES',
-        message: `The dropped folders hold no ${SUPPORTED_EXTENSIONS.join(' or ')} files to upload`
+        message: `The dropped folders hold no ${SUPPORTED_EXTENSIONS.join(' or ')} files of at most ${MAX_UPLOAD_FILE_MB} MB to upload`
       }
     };
   }

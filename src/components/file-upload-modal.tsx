@@ -1,7 +1,7 @@
 'use client';
 import { sanitizeIndexName } from '@/utils/index-upload';
 import { countFiles, EntryReadError, processFileEntry, readUploadError, type UploadItem } from '@/utils/upload-files';
-import { prepareDrop, SUPPORTED_EXTENSIONS } from '@/utils/upload-rules';
+import { FILE_TOO_LARGE_MESSAGE, prepareDrop, SUPPORTED_EXTENSIONS } from '@/utils/upload-rules';
 import { File, Folder, Plus, Upload, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -70,7 +70,7 @@ const IndexUploadModal = () => {
     const errorMessages: Record<string, string> = {
       NO_FILE: 'No file was provided for upload',
       NO_PATH: 'File path is required',
-      FILE_TOO_LARGE: 'File size exceeds the maximum limit of 10MB',
+      FILE_TOO_LARGE: FILE_TOO_LARGE_MESSAGE,
       EMPTY_FILE: 'File is empty',
       PINECONE_CONNECTION_ERROR: 'Unable to connect to the database',
       INDEX_CREATION_TIMEOUT: 'Timeout while creating the index',

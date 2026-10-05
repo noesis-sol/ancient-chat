@@ -130,7 +130,7 @@ describe('IndexUploadModal', () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
     const alertBox = container.querySelector('[role=alert]');
-    expect(alertBox?.textContent).toContain('File size exceeds the maximum limit of 10MB');
+    expect(alertBox?.textContent).toContain('File size exceeds the maximum limit of 4 MB');
     expect(alertBox?.textContent).toContain('File: /docs/b.txt');
     expect(button('Upload Files')).toBeTruthy();
     expect(button('Cancel').disabled).toBe(false);
