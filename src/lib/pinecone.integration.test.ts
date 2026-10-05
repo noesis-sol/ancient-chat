@@ -23,6 +23,7 @@ const fakes = vi.hoisted(() => {
 
   type Row = { id: string; name: string; is_active: boolean; weight: number; ancient: string | null };
   type Where = Partial<Record<keyof Row, unknown>>;
+  type OrderBy = Partial<Record<keyof Row, 'asc' | 'desc'>>;
 
   // The Index table, with the Prisma calls IndexesService makes.
   let rows: Row[] = [];
@@ -33,6 +34,18 @@ const fakes = vi.hoisted(() => {
         ? (value.in as unknown[]).includes(field)
         : field === value;
     });
+  // Sorts like Postgres would for an orderBy such as { name: 'asc' }; without one, insertion order.
+  const sorted = (list: Row[], orderBy: OrderBy = {}) =>
+    Object.entries(orderBy).reduceRight(
+      (acc, [key, direction]) =>
+        [...acc].sort((a, b) => {
+          // Same-typed columns, so < compares names as strings and weights as numbers.
+          const [x, y] = [a[key as keyof Row], b[key as keyof Row]] as [string, string];
+          const order = x === y ? 0 : x < y ? -1 : 1;
+          return direction === 'desc' ? -order : order;
+        }),
+      list
+    );
   const find = (where: Where) => {
     const row = rows.find((candidate) => matches(candidate, where));
     if (!row) {
@@ -44,7 +57,8 @@ const fakes = vi.hoisted(() => {
   // The bulk writes apply when called, so the sync's $transaction runs them in order.
   const db = {
     index: {
-      findMany: async (args?: { where?: Where }) => rows.filter((row) => matches(row, args?.where)).map((row) => ({ ...row })),
+      findMany: async (args?: { where?: Where; orderBy?: OrderBy }) =>
+        sorted(rows.filter((row) => matches(row, args?.where)), args?.orderBy).map((row) => ({ ...row })),
       findUnique: async ({ where }: { where: Where }) => {
         const row = rows.find((candidate) => matches(candidate, where));
         return row ? { ...row } : null;
