@@ -3,12 +3,21 @@ import { prisma } from '@/lib/prisma';
 import { Index } from '@prisma/client';
 import { planIndexSync } from './index-sync';
 
+// The sync in flight in this process, shared so concurrent admin loads run it once.
+let syncInFlight: Promise<void> | null = null;
+
 export class IndexesService {
   private pinecone = new Pinecone();
   private prisma = prisma;
 
+  // Admin view: syncs with Pinecone first so it shows Pinecone's current indexes.
+  // A failed sync is logged and the rows already in the DB are returned.
   async getIndexes() {
-    await this.updateDatabaseIndexes();
+    try {
+      await this.syncDatabaseIndexes();
+    } catch (error) {
+      console.error('Error updating database indexes:', error);
+    }
 
     return await this.prisma.index.findMany();
   }
@@ -36,9 +45,8 @@ export class IndexesService {
     });
   }
 
+  // Chat path: reads the DB only. The admin page keeps the rows in line with Pinecone.
   async getActiveIndexes() {
-    await this.updateDatabaseIndexes();
-
     return await this.prisma.index.findMany({
       where: {
         is_active: true
@@ -76,27 +84,35 @@ export class IndexesService {
     });
   }
 
+  private syncDatabaseIndexes(): Promise<void> {
+    syncInFlight ??= this.updateDatabaseIndexes().finally(() => {
+      syncInFlight = null;
+    });
+    return syncInFlight;
+  }
+
   private async updateDatabaseIndexes() {
     const { indexes }: IndexList = await this.pinecone.listIndexes();
 
     if (!indexes) {
-      return [];
+      return;
     }
 
-    try {
-      const existingIndexes = await this.prisma.index.findMany();
-      const { deletes, updates, creates } = planIndexSync(existingIndexes, indexes);
+    const existingIndexes = await this.prisma.index.findMany();
+    const { deletes, updates, creates } = planIndexSync(existingIndexes, indexes);
 
-      // Deletes first, then updates, then creates: a recreated or renamed index reuses
-      // a name or host that a stale row may still hold. $transaction runs them in order.
-      await this.prisma.$transaction([
-        ...deletes.map((id) => this.prisma.index.delete({ where: { id } })),
-        ...updates.map(({ id, data }) => this.prisma.index.update({ where: { id }, data })),
-        ...creates.map((data) => this.prisma.index.create({ data }))
-      ]);
-    } catch (error) {
-      console.error('Error updating database indexes:', error);
-      throw error;
+    if (deletes.length === 0 && updates.length === 0 && creates.length === 0) {
+      return;
     }
+
+    // Deletes first, then updates, then creates: a recreated or renamed index reuses
+    // a name or host that a stale row may still hold. $transaction runs them in order.
+    // Each step is idempotent, so a sync racing another process's (e.g. another
+    // server instance) skips what that one already applied instead of failing.
+    await this.prisma.$transaction([
+      this.prisma.index.deleteMany({ where: { id: { in: deletes } } }),
+      ...updates.map(({ id, data }) => this.prisma.index.updateMany({ where: { id }, data })),
+      this.prisma.index.createMany({ data: creates, skipDuplicates: true })
+    ]);
   }
 }

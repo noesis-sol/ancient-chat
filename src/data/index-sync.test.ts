@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 import { NEW_INDEX_DEFAULTS, planIndexSync } from './index-sync.ts';
 import type { IndexRow, IndexSyncPlan, PineconeIndexRef } from './index-sync.ts';
 
