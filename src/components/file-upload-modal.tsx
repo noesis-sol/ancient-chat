@@ -229,16 +229,18 @@ const IndexUploadModal = () => {
     setIsUploading(true);
     setShowProgress(true);
     setError(null);
-    abortControllerRef.current = new AbortController();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
     try {
-      const processItems = async (items: UploadItem[]) => {
+      // Resolves true only when every file was uploaded; a failed file throws.
+      const processItems = async (items: UploadItem[]): Promise<boolean> => {
         let processed = 0;
         const totalFiles = countFiles(items);
 
         const processItem = async (item: UploadItem) => {
           try {
-            if (abortControllerRef.current?.signal.aborted) {
+            if (controller.signal.aborted) {
               throw new Error('Upload cancelled');
             }
 
@@ -254,7 +256,7 @@ const IndexUploadModal = () => {
               const response = await fetch('/api/indexes/upload', {
                 method: 'POST',
                 body: formData,
-                signal: abortControllerRef.current?.signal
+                signal: controller.signal
               });
 
               if (!response.ok) {
@@ -279,35 +281,44 @@ const IndexUploadModal = () => {
         };
 
         for (const item of items) {
-          if (abortControllerRef.current?.signal.aborted) {
+          if (controller.signal.aborted) {
             throw new Error('Upload cancelled');
           }
           await processItem(item);
         }
+
+        return processed === totalFiles && !controller.signal.aborted;
       };
 
-      await processItems(files);
+      const succeeded = await processItems(files);
 
-      if (uploadProgress === 100) {
+      if (succeeded) {
         const modalElement = document.getElementById('index-upload-modal') as HTMLDialogElement;
         if (modalElement) {
           modalElement.close();
         }
         setFiles([]);
         resetUploadState();
-        abortControllerRef.current = null;
       }
     } catch (error) {
       console.error('Error uploading files:', error);
       if ((error as Error).message !== 'Upload cancelled') {
-        setError({
-          message: 'Failed to upload files',
-          code: 'UPLOAD_ERROR'
-        });
+        // Keep the specific error handleErrorResponse already set, if any.
+        setError(
+          (prev) =>
+            prev ?? {
+              message: 'Failed to upload files',
+              code: 'UPLOAD_ERROR'
+            }
+        );
       }
-      setIsUploading(false);
       setShowProgress(false);
-      abortControllerRef.current = null;
+    } finally {
+      setIsUploading(false);
+      // A cancelled run must not clear the controller of an upload started after it.
+      if (abortControllerRef.current === controller) {
+        abortControllerRef.current = null;
+      }
     }
   };
 
