@@ -1,10 +1,8 @@
-import { uuidv4 } from '@/app/(main)/chat/[name]/message';
-import Link from 'next/link';
+import { ContextSource, sourceLabel } from '@/utils/context-sources';
+import { useId } from 'react';
 
-export default function Popup({ id, title, text }: { id: string; title: string; text: [string] | string }) {
-  if (!Array.isArray(text)) {
-    text = [text];
-  }
+export default function Popup({ title, sources }: { title: string; sources: ContextSource[] }) {
+  const id = useId();
 
   return (
     <>
@@ -17,17 +15,11 @@ export default function Popup({ id, title, text }: { id: string; title: string; 
           <h3 className='font-bold text-lg'>Source</h3>
           <div className='p-4'>
             <ol className='list'>
-              {text.map((s) => (
-                <li className='py-5 flex flex-col' key={uuidv4()}>
-                  <p className='grow'>{s}</p>
-                  <p className='flex justify-end'>
-                    <Link
-                      className='text-blue-500 pus'
-                      target='_blank'
-                      href='https://www.perseus.tufts.edu/hopper/text?doc=Perseus%3Atext%3A1999.01.0054%3Abekker%20page%3D1167b%3Abekker%20line%3D20'
-                    >
-                      -- Nicomachean Ethics
-                    </Link>
+              {sources.map((source) => (
+                <li className='py-5 flex flex-col' key={`${source.index}/${source.id}`}>
+                  <p className='grow whitespace-pre-line'>{source.text}</p>
+                  <p className='flex justify-end italic' title={source.source}>
+                    -- {sourceLabel(source)}
                   </p>
                 </li>
               ))}

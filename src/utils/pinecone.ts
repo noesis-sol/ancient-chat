@@ -1,6 +1,7 @@
 import { IndexesService } from '@/data/indexes.service';
 import { allocateChunks } from '@/utils/chunk-allocation';
-import { Pinecone, RecordMetadataValue } from '@pinecone-database/pinecone';
+import { ContextSource, toContextSource } from '@/utils/context-sources';
+import { Pinecone } from '@pinecone-database/pinecone';
 import { OpenAI } from 'openai';
 
 // Clients are created on first use: constructing them at module scope throws
@@ -30,7 +31,7 @@ async function getEmbedding(text: string) {
   return response.data[0].embedding;
 }
 
-export async function queryPineconeContext(question: string): Promise<RecordMetadataValue[]> {
+export async function queryPineconeContext(question: string): Promise<ContextSource[]> {
   const activeIndexes = await indexesService.getActiveIndexes();
   const totalChunks = 10;
 
@@ -55,7 +56,9 @@ export async function queryPineconeContext(question: string): Promise<RecordMeta
     )
   );
 
-  return results.flatMap((result) => result.matches?.map((match) => match.metadata?.text ?? "") ?? []);
+  return results.flatMap((result, i) =>
+    (result.matches ?? []).flatMap((match) => toContextSource(queries[i].name, match) ?? [])
+  );
 }
 
 export async function deleteIndex(indexName: string) {

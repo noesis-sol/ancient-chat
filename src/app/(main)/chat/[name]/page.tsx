@@ -3,12 +3,14 @@
 import Message from '@/app/(main)/chat/[name]/message';
 import { ancients } from '@/app/(main)/chat/ancients';
 import { PaperAirplaneIcon } from '@heroicons/react/16/solid';
-import { isBusy, isThinking, messageReasoning, messageText } from '@/utils/ui-message';
+import { createChatTransport, isBusy, isThinking, messageSources, messageText, type ChatUIMessage } from '@/utils/ui-message';
 import { useChat } from '@ai-sdk/react';
 import Image from 'next/image';
 import { redirect } from 'next/navigation';
 import React, { useEffect, useRef, useState } from 'react';
 import { chatFont } from '@/utils/fonts';
+
+const transport = createChatTransport();
 
 export default function ChatWith({ params }: { params: Promise<{ name: string }> }) {
   const { name } = React.use(params);
@@ -32,7 +34,7 @@ export default function ChatWith({ params }: { params: Promise<{ name: string }>
   }, []);
 
   const [input, setInput] = useState('');
-  const { messages, sendMessage, status, error, regenerate } = useChat();
+  const { messages, sendMessage, status, error, regenerate } = useChat<ChatUIMessage>({ transport });
 
   const canSend = input.trim() !== '' && !isBusy(status);
   const showThinking = isThinking(status, messages);
@@ -68,8 +70,7 @@ export default function ChatWith({ params }: { params: Promise<{ name: string }>
                     <Message
                       key={message.id}
                       message={messageText(message)}
-                      source={message.role === 'user' ? undefined : messageReasoning(message)}
-                      id={message.id}
+                      sources={message.role === 'user' ? undefined : messageSources(message)}
                       direction={message.role === 'user' ? 'outgoing' : 'incoming'}
                       isLoading={false}
                     />

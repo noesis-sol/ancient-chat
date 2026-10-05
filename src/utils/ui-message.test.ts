@@ -1,6 +1,6 @@
 import type { UIMessage } from 'ai';
 import { describe, expect, it } from 'vitest';
-import { isBusy, isThinking, messageReasoning, messageText } from './ui-message';
+import { isBusy, isThinking, messageText } from './ui-message';
 
 const user: UIMessage = { id: '1', role: 'user', parts: [{ type: 'text', text: 'What is virtue?' }] };
 const reply = (parts: UIMessage['parts']): UIMessage => ({ id: '2', role: 'assistant', parts });
@@ -18,21 +18,6 @@ describe('messageText', () => {
 
   it('is empty for a message without text', () => {
     expect(messageText(reply([{ type: 'step-start' }]))).toBe('');
-  });
-});
-
-describe('messageReasoning', () => {
-  it('joins the reasoning parts', () => {
-    const message = reply([
-      { type: 'reasoning', text: 'First.' },
-      { type: 'text', text: 'Answer' },
-      { type: 'reasoning', text: 'Second.' },
-    ]);
-    expect(messageReasoning(message)).toBe('First.\nSecond.');
-  });
-
-  it('is empty when there is no reasoning', () => {
-    expect(messageReasoning(user)).toBe('');
   });
 });
 

@@ -1,4 +1,13 @@
-import { convertToModelMessages, createUIMessageStreamResponse, LanguageModel, streamText, toUIMessageStream } from 'ai';
+import type { ContextSource } from '@/utils/context-sources';
+import type { ChatUIMessage } from '@/utils/ui-message';
+import {
+  convertToModelMessages,
+  createUIMessageStream,
+  createUIMessageStreamResponse,
+  LanguageModel,
+  streamText,
+  toUIMessageStream,
+} from 'ai';
 import { z } from 'zod';
 
 // Limits on what a client may send to /api/chat. They bound the prompt we pay
@@ -127,11 +136,14 @@ export async function chatStreamResponse({
   model,
   instructions,
   messages,
+  sources = [],
   abortSignal,
 }: {
   model: LanguageModel;
   instructions: string;
   messages: ChatMessage[];
+  // The retrieved chunks the instructions were built from, sent with the reply.
+  sources?: ContextSource[];
   abortSignal?: AbortSignal;
 }): Promise<Response> {
   const result = streamText({
@@ -146,6 +158,14 @@ export async function chatStreamResponse({
   // Errors from the model arrive after the response has started, so they are
   // sent to the client as an error part instead of ending the stream silently.
   return createUIMessageStreamResponse({
-    stream: toUIMessageStream({ stream: result.stream, onError: () => STREAM_ERROR_MESSAGE }),
+    stream: createUIMessageStream<ChatUIMessage>({
+      execute: ({ writer }) => {
+        if (sources.length > 0) {
+          writer.write({ type: 'data-sources', data: sources });
+        }
+        writer.merge(toUIMessageStream({ stream: result.stream, onError: () => STREAM_ERROR_MESSAGE }));
+      },
+      onError: () => STREAM_ERROR_MESSAGE,
+    }),
   });
 }

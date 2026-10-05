@@ -1,23 +1,15 @@
 import Popup from '@/app/(main)/chat/[name]/popup';
+import type { ContextSource } from '@/utils/context-sources';
 
 export interface MessageProps {
-  id?: string;
   message: string;
   user?: string;
-  source?: [string] | string;
+  sources?: ContextSource[];
   direction: 'incoming' | 'outgoing';
   isLoading?: boolean;
 }
 
-export function uuidv4() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    const r = (Math.random() * 16) | 0,
-      v = c == 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-}
-
-export default function Message({ message, id, source, direction, isLoading }: MessageProps) {
+export default function Message({ message, sources, direction, isLoading }: MessageProps) {
   let chatDirection = 'chat-start';
   let chatBg = 'bg-white dark:bg-gray-500 dark:text-gray-300 text-gray-600';
   if (direction === 'outgoing') {
@@ -30,7 +22,7 @@ export default function Message({ message, id, source, direction, isLoading }: M
       <div className={`chat ${chatDirection}`}>
         <div className={`chat-bubble ${chatBg} ${isLoading ? 'pb-0' : ''}`}>
           {isLoading ? <span className='loading loading-dots loading-md'></span> : message}{' '}
-          {source && source.length ? <Popup id={id ?? uuidv4()} text={source} title='view source' /> : null}
+          {sources && sources.length ? <Popup sources={sources} title='view source' /> : null}
         </div>
       </div>
     </div>
