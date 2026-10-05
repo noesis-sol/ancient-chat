@@ -31,9 +31,8 @@ const signedOut = () => {
   clerk.currentUser.mockResolvedValue(null);
 };
 
-const signedInAs = (emailAddress: string) => {
-  clerk.getAuth.mockReturnValue({ userId: 'user_1' });
-  clerk.currentUser.mockResolvedValue({ emailAddresses: [{ emailAddress }] });
+const signedInAs = (role: string) => {
+  clerk.getAuth.mockReturnValue({ userId: 'user_1', sessionClaims: { metadata: { role } } });
 };
 
 const getRequest = () => new NextRequest('http://localhost/api/prompt?ancient=aristotle');
@@ -65,7 +64,7 @@ describe('checkAdmin', () => {
   });
 
   it('rejects a signed-in non-admin with 403', async () => {
-    signedInAs('someone@example.com');
+    signedInAs('member');
 
     await expect(checkAdmin(getRequest())).resolves.toEqual({ ok: false, status: 403, error: 'Forbidden' });
   });
@@ -78,7 +77,7 @@ describe('checkAdmin', () => {
   });
 
   it('accepts an admin', async () => {
-    signedInAs('michael@noesis.solutions');
+    signedInAs('admin');
 
     await expect(checkAdmin(getRequest())).resolves.toEqual({ ok: true });
   });
@@ -96,7 +95,7 @@ describe('GET /api/prompt', () => {
   });
 
   it('returns 403 for a signed-in non-admin', async () => {
-    signedInAs('someone@example.com');
+    signedInAs('member');
 
     const response = await GET(getRequest());
 
@@ -106,7 +105,7 @@ describe('GET /api/prompt', () => {
   });
 
   it('returns the prompt for an admin', async () => {
-    signedInAs('michael@noesis.solutions');
+    signedInAs('admin');
 
     const response = await GET(getRequest());
 
@@ -127,7 +126,7 @@ describe('PUT /api/prompt/[id]', () => {
   });
 
   it('returns 403 for a signed-in non-admin', async () => {
-    signedInAs('someone@example.com');
+    signedInAs('member');
 
     const response = await PUT(putRequest(), putParams);
 
@@ -137,7 +136,7 @@ describe('PUT /api/prompt/[id]', () => {
   });
 
   it('updates the prompt for an admin', async () => {
-    signedInAs('michael@noesis.solutions');
+    signedInAs('admin');
 
     const response = await PUT(putRequest(), putParams);
 

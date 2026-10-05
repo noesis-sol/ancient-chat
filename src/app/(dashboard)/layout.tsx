@@ -1,10 +1,13 @@
+import { redirectNonAdmin } from '@/utils/adminAuth';
 import { lemonMilkFont } from '@/utils/fonts';
 import { ClerkProvider } from '@clerk/nextjs';
 import Link from 'next/link';
 import React from 'react';
 import '.././globals.css';
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  await redirectNonAdmin();
+
   return (
     <ClerkProvider>
       <html lang='en' className={lemonMilkFont.className}>

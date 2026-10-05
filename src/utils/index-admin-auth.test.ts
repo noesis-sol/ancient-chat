@@ -42,9 +42,8 @@ const signedOut = () => {
   clerk.currentUser.mockResolvedValue(null);
 };
 
-const signedInAs = (emailAddress: string) => {
-  clerk.getAuth.mockReturnValue({ userId: 'user_1' });
-  clerk.currentUser.mockResolvedValue({ emailAddresses: [{ emailAddress }] });
+const signedInAs = (role: string) => {
+  clerk.getAuth.mockReturnValue({ userId: 'user_1', sessionClaims: { metadata: { role } } });
 };
 
 const nameParams = () => ({ params: Promise.resolve({ name: 'plato' }) });
@@ -136,7 +135,7 @@ describe.each(routes)('$name', ({ call, effects, admin }) => {
   });
 
   it('returns 403 for a signed-in non-admin', async () => {
-    signedInAs('someone@example.com');
+    signedInAs('member');
 
     const response = await call();
 
@@ -146,7 +145,7 @@ describe.each(routes)('$name', ({ call, effects, admin }) => {
   });
 
   it('runs the handler for an admin', async () => {
-    signedInAs('michael@noesis.solutions');
+    signedInAs('admin');
 
     await admin(await call());
   });
@@ -154,7 +153,7 @@ describe.each(routes)('$name', ({ call, effects, admin }) => {
 
 describe('withAdmin', () => {
   it('passes the request and the route context through to the handler', async () => {
-    signedInAs('michael@noesis.solutions');
+    signedInAs('admin');
     const handler = vi.fn<(request: NextRequest, context: ReturnType<typeof nameParams>) => Promise<Response>>(
       async () => new Response('ok')
     );
@@ -168,7 +167,7 @@ describe('withAdmin', () => {
   });
 
   it('does not call the handler for a non-admin', async () => {
-    signedInAs('someone@example.com');
+    signedInAs('member');
     const handler = vi.fn(async () => new Response('ok'));
 
     const response = await withAdmin(handler)(new NextRequest('http://localhost/api/indexes'));

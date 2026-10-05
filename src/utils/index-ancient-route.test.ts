@@ -24,14 +24,16 @@ const patch = (body: string) =>
     params: Promise.resolve({ name: 'ethics' })
   });
 
-const signedInAs = (emailAddress: string) => {
-  clerk.getAuth.mockReturnValue({ userId: 'user_1' });
-  clerk.currentUser.mockResolvedValue({ emailAddresses: [{ emailAddress }] });
+// role: the Clerk public metadata role; undefined for a signed-in user who isn't an admin.
+const signedInAs = (role: 'admin' | undefined) => {
+  const metadata = role ? { role } : {};
+  clerk.getAuth.mockReturnValue({ userId: 'user_1', sessionClaims: { metadata } });
+  clerk.currentUser.mockResolvedValue({ publicMetadata: metadata });
 };
 
 beforeEach(() => {
   vi.clearAllMocks();
-  signedInAs('michael@noesis.solutions');
+  signedInAs('admin');
   indexes.setIndexAncient.mockResolvedValue({});
 });
 
@@ -74,7 +76,7 @@ describe('PATCH /api/indexes/[name]/ancient', () => {
   });
 
   it('is for admins only', async () => {
-    signedInAs('someone@example.com');
+    signedInAs(undefined);
 
     const response = await patch(JSON.stringify({ ancient: 'plato' }));
 

@@ -14,8 +14,9 @@ vector indexes that admins build by uploading source texts.
     enabled. The server rejects chats with unknown or disabled ones.
   - `src/app/api`: route handlers for chat, indexes, uploads and prompts.
 - **Clerk** handles authentication. `src/middleware.ts` requires sign-in for
-  `/chat`. Admins are the users whose email address is listed in
-  `src/utils/emails.ts`.
+  `/chat`. Admins are the users whose Clerk public metadata has
+  `"role": "admin"`; `isAdmin` in `src/utils/adminAuth.ts` is the one check,
+  used by the admin pages, the `(dashboard)` layout and the admin APIs.
 - **PostgreSQL via Prisma 7** (`prisma/schema.prisma`, `prisma.config.ts`)
   stores the indexes' ancient, active flag and weight (`Index`) and each
   ancient's system prompt (`Prompt`).
@@ -105,11 +106,15 @@ Pinecone, OpenAI and Clerk.
    have checked it holds nothing you need.
 
 4. Configure Clerk. In the Clerk dashboard, enable the sign-in methods you
-   want (email address is needed for admins, see below).
+   want. Under Sessions > Customize session token, add
+   `{ "metadata": "{{user.public_metadata}}" }` so the admin role travels in
+   the session token; without it, every admin check loads the user from Clerk.
 
-5. Bootstrap an admin. Add your email address to `src/utils/emails.ts`, sign
-   up in the app with that address, and open `/admin` (also linked from the
-   user menu). Changing the list needs a rebuild and redeploy.
+5. Bootstrap an admin. Sign up in the app, then in the Clerk dashboard set the
+   user's public metadata (Users > user > Metadata > Public) to
+   `{ "role": "admin" }`. Sign out and back in (or wait for the session token
+   to refresh) and open `/admin` (also linked from the user menu). No rebuild
+   is needed.
 
 6. Load content. On `/admin`, upload a folder of text files: the folder name
    becomes the Pinecone index name. Assign each index to an ancient (new

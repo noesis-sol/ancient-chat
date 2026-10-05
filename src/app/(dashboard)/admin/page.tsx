@@ -1,18 +1,12 @@
 import AccordionSection from '@/components/accordion';
 import IndexUploadModal from '@/components/file-upload-modal';
 import { IndexesService } from '@/data/indexes.service';
-import { adminEmails } from '@/utils/emails';
-import { currentUser } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
+import { redirectNonAdmin } from '@/utils/adminAuth';
 
 const indexesService = new IndexesService();
 
 export default async function AdminPage() {
-  const user = await currentUser();
-
-  if (!user || !user?.emailAddresses?.some((email) => adminEmails.includes(email.emailAddress))) {
-    redirect('/');
-  }
+  await redirectNonAdmin();
 
   //get all indexes from pinecone
 

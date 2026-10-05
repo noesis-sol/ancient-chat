@@ -1,6 +1,34 @@
-import { adminEmails } from '@/utils/emails';
-import { currentUser, getAuth } from '@clerk/nextjs/server';
+import { hasAdminRole } from '@/utils/admin-role';
+import { auth, currentUser, getAuth } from '@clerk/nextjs/server';
+import { redirect } from 'next/navigation';
 import { NextRequest, NextResponse } from 'next/server';
+
+type AuthState = {
+  userId: string | null;
+  sessionClaims?: CustomJwtSessionClaims | null;
+};
+
+// The one admin check, for whatever auth() or getAuth() returned. Reads the role from the session
+// claims when the session token carries the metadata, otherwise from the user record.
+export const isAdmin = async ({ userId, sessionClaims }: AuthState): Promise<boolean> => {
+  if (!userId) {
+    return false;
+  }
+
+  if (sessionClaims?.metadata) {
+    return hasAdminRole(sessionClaims.metadata);
+  }
+
+  const user = await currentUser();
+  return hasAdminRole(user?.publicMetadata);
+};
+
+// For admin pages and layouts: sends anyone who is not an admin back to the home page.
+export const redirectNonAdmin = async (): Promise<void> => {
+  if (!(await isAdmin(await auth()))) {
+    redirect('/');
+  }
+};
 
 export type AdminAuthResult =
   | { ok: true }
@@ -9,14 +37,12 @@ export type AdminAuthResult =
 
 // 401 when signed out, 403 when signed in but not an admin.
 export const checkAdmin = async (request: NextRequest): Promise<AdminAuthResult> => {
-  const { userId } = getAuth(request);
-  if (!userId) {
+  const authState = getAuth(request);
+  if (!authState.userId) {
     return { ok: false, status: 401, error: 'Unauthorized' };
   }
 
-  const user = await currentUser();
-
-  if (!user?.emailAddresses?.some((email) => adminEmails.includes(email.emailAddress))) {
+  if (!(await isAdmin(authState))) {
     return { ok: false, status: 403, error: 'Forbidden' };
   }
 

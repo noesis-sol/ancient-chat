@@ -62,8 +62,8 @@ const expectJsonError = async (response: Response, status: number) => {
 beforeEach(() => {
   vi.clearAllMocks();
   vi.spyOn(console, 'error').mockImplementation(() => {});
-  clerk.getAuth.mockReturnValue({ userId: 'user_1' });
-  clerk.currentUser.mockResolvedValue({ emailAddresses: [{ emailAddress: 'michael@noesis.solutions' }] });
+  clerk.getAuth.mockReturnValue({ userId: 'user_1', sessionClaims: { metadata: { role: 'admin' } } });
+  clerk.currentUser.mockResolvedValue({ publicMetadata: { role: 'admin' } });
   prompts.updatePrompt.mockImplementation(async (id: string, { text }: { text: string }) => ({
     id,
     text,
