@@ -1,4 +1,5 @@
 import localFont from 'next/font/local';
+import { Nunito_Sans } from 'next/font/google';
 
 export const lemonMilkFont = localFont({
   src: [
@@ -13,3 +14,7 @@ export const lemonMilkFont = localFont({
   ],
   variable: '--font-lemon-milk'
 });
+
+// Chat text. An open-licensed (SIL OFL) stand-in for Avenir; next/font downloads it at
+// build time and serves it from our own origin, so visitors make no third-party request.
+export const chatFont = Nunito_Sans({ subsets: ['latin'] });

@@ -6,7 +6,7 @@ import { PaperAirplaneIcon } from '@heroicons/react/16/solid';
 import { Message as AiMessage, useChat } from 'ai/react';
 import { redirect } from 'next/navigation';
 import React, { useEffect, useRef } from 'react';
-import './style.css';
+import { chatFont } from '@/utils/fonts';
 
 export default function ChatWith({ params }: { params: Promise<{ name: string }> }) {
   const { name } = React.use(params);
@@ -54,7 +54,7 @@ export default function ChatWith({ params }: { params: Promise<{ name: string }>
           <p>{ancient.year}</p>
         </div>
       </div>
-      <div className='grow flex-col h-full sm:p-6 md:pl-0 chat-box text-lg'>
+      <div className={`grow flex-col h-full sm:p-6 md:pl-0 text-lg ${chatFont.className}`}>
         <div className='flex flex-col flex-auto shrink-0 sm:rounded-2xl h-full p-4 bg-base-200'>
           <div className='flex flex-col h-full overflow-x-auto mb-4'>
             <div className='flex flex-col-reverse h-full overflow-x-auto'>
