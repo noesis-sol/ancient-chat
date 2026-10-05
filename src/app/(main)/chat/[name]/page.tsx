@@ -5,7 +5,7 @@ import { ancients } from '@/app/(main)/chat/ancients';
 import { PaperAirplaneIcon } from '@heroicons/react/16/solid';
 import { Message as AiMessage, useChat } from 'ai/react';
 import { redirect } from 'next/navigation';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import './style.css';
 
 export default function ChatWith({ params }: { params: Promise<{ name: string }> }) {
@@ -29,15 +29,17 @@ export default function ChatWith({ params }: { params: Promise<{ name: string }>
     }
   }, []);
 
-  const [isThinking, setIsThinking] = useState(false);
-  const { messages, input, handleInputChange, handleSubmit } = useChat({
-    onResponse: () => {
-      setIsThinking(false);
-    }
-  });
+  const { messages, input, handleInputChange, handleSubmit, isLoading, error, reload } = useChat();
+
+  const canSend = input.trim() !== '' && !isLoading;
+  // Show the dots until the reply starts streaming in.
+  const isThinking = isLoading && messages[messages.length - 1]?.role === 'user';
 
   const handleChatSubmit = (e: React.FormEvent) => {
-    setIsThinking(true);
+    if (!canSend) {
+      e.preventDefault();
+      return;
+    }
     handleSubmit(e);
   };
 
@@ -68,6 +70,18 @@ export default function ChatWith({ params }: { params: Promise<{ name: string }>
                   />
                 ))}
                 {isThinking ? <Message key='loading' message='...' direction='incoming' isLoading={true} /> : null}
+                {error && !isLoading ? (
+                  <div className='col-start-1 col-end-13'>
+                    <div className='chat chat-start'>
+                      <div role='alert' className='chat-bubble chat-bubble-error'>
+                        Something went wrong while getting a reply.{' '}
+                        <button type='button' className='btn btn-sm ml-2' onClick={() => reload()}>
+                          Retry
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
               </div>
             </div>
           </div>
@@ -83,7 +97,7 @@ export default function ChatWith({ params }: { params: Promise<{ name: string }>
               />
             </div>
             <div className='ml-2'>
-              <button className='btn btn-primary text-lg'>
+              <button type='submit' className='btn btn-primary text-lg' disabled={!canSend}>
                 <span>Send</span>
                 <PaperAirplaneIcon className='h-5'></PaperAirplaneIcon>
               </button>
