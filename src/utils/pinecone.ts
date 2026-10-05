@@ -1,4 +1,5 @@
 import { IndexesService } from '@/data/indexes.service';
+import { allocateChunks } from '@/utils/chunk-allocation';
 import { Pinecone, RecordMetadataValue } from '@pinecone-database/pinecone';
 import { OpenAI } from 'openai';
 
@@ -22,37 +23,30 @@ async function getEmbedding(text: string) {
 
 export async function queryPineconeContext(question: string): Promise<RecordMetadataValue[]> {
   const activeIndexes = await indexesService.getActiveIndexes();
-  const context: RecordMetadataValue[] = [];
-  if (activeIndexes.length === 0) {
-    return context;
-  }
-
   const totalChunks = 10;
 
-  let totalWeight = activeIndexes.reduce((acc, index) => acc + index.weight, 0);
+  const allocation = allocateChunks(activeIndexes.map((index) => index.weight), totalChunks);
+  const queries = activeIndexes
+    .map((index, i) => ({ name: index.name, topK: allocation[i] }))
+    .filter(({ topK }) => topK > 0);
 
-  if(totalWeight === 0) {
-    totalWeight = 1;
+  if (queries.length === 0) {
+    return [];
   }
 
-  for (const index of activeIndexes) {
-    const pineconeIndex = pinecone.Index(index.name);
-    const embedding = await getEmbedding(question);
+  const embedding = await getEmbedding(question);
 
-    const weight = index.weight / totalWeight;
-    const topK = Math.round(totalChunks * weight);
+  const results = await Promise.all(
+    queries.map(({ name, topK }) =>
+      pinecone.Index(name).query({
+        vector: embedding,
+        topK,
+        includeMetadata: true
+      })
+    )
+  );
 
-    const results = await pineconeIndex.query({
-      vector: embedding,
-      topK,
-      includeMetadata: true
-    });
-
-    if (results.matches?.length) {
-      context.push(...(results.matches.map((match) => match.metadata?.text ?? "") || []));
-    }
-  }
-  return context;
+  return results.flatMap((result) => result.matches?.map((match) => match.metadata?.text ?? "") ?? []);
 }
 
 export async function deleteIndex(indexName: string) {
