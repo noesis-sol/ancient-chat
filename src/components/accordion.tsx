@@ -33,7 +33,7 @@ const AccordionSection = ({ data }: AccordionSectionProps) => {
   const onDelete = async (title: string) => {
     setIsDeleting(true);
     try {
-      const result = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/indexes/${title}`, {
+      const result = await fetch(`/api/indexes/${encodeURIComponent(title)}`, {
         method: 'DELETE'
       });
       const { success } = (await result.json()) as { success: boolean };
@@ -62,7 +62,7 @@ const AccordionSection = ({ data }: AccordionSectionProps) => {
     setLoadingToggles((prev) => ({ ...prev, [title]: true }));
 
     try {
-      const result = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/indexes/${title}/toggle`, {
+      const result = await fetch(`/api/indexes/${encodeURIComponent(title)}/toggle`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'
@@ -95,7 +95,7 @@ const AccordionSection = ({ data }: AccordionSectionProps) => {
     };
 
     try {
-      const result = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/indexes/${title}`, {
+      const result = await fetch(`/api/indexes/${encodeURIComponent(title)}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
