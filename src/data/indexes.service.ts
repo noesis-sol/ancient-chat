@@ -1,6 +1,7 @@
 import { IndexList, Pinecone } from '@pinecone-database/pinecone';
 import { prisma } from '@/lib/prisma';
 import { Index } from '@prisma/client';
+import { planIndexSync } from './index-sync';
 
 export class IndexesService {
   private pinecone = new Pinecone();
@@ -82,46 +83,17 @@ export class IndexesService {
       return [];
     }
 
-    const pineconeIndexes = indexes.map((index) => ({
-      id: index.host,
-      name: index.name,
-      is_active: false,
-      weight: 0
-    }));
-
     try {
-      // Get existing indexes from database
       const existingIndexes = await this.prisma.index.findMany();
-      const existingIndexIds = new Set(existingIndexes.map((index) => index.id));
-      const pineconeIndexIds = new Set(pineconeIndexes.map((index) => index.id));
+      const { deletes, updates, creates } = planIndexSync(existingIndexes, indexes);
 
-      // Prepare operations
-      const createOperations = pineconeIndexes
-        .filter((index) => !existingIndexIds.has(index.id))
-        .map((index) => this.prisma.index.create({ data: {...index, weight: 1} }));
-
-      const updateOperations = pineconeIndexes
-        .filter((index) => existingIndexIds.has(index.id))
-        .map((index) =>
-          this.prisma.index.update({
-            where: { id: index.id },
-            data: {
-              name: index.name
-            }
-          })
-        );
-
-      // Delete indexes that don't exist in Pinecone
-      const deleteOperations = existingIndexes
-        .filter((index) => !pineconeIndexIds.has(index.id))
-        .map((index) =>
-          this.prisma.index.delete({
-            where: { id: index.id }
-          })
-        );
-
-      // Execute all operations in a transaction
-      await this.prisma.$transaction([...createOperations, ...updateOperations, ...deleteOperations]);
+      // Deletes first, then updates, then creates: a recreated or renamed index reuses
+      // a name or host that a stale row may still hold. $transaction runs them in order.
+      await this.prisma.$transaction([
+        ...deletes.map((id) => this.prisma.index.delete({ where: { id } })),
+        ...updates.map(({ id, data }) => this.prisma.index.update({ where: { id }, data })),
+        ...creates.map((data) => this.prisma.index.create({ data }))
+      ]);
     } catch (error) {
       console.error('Error updating database indexes:', error);
       throw error;
