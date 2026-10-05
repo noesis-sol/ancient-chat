@@ -44,7 +44,7 @@ export default function ChatWith({ params }: { params: Promise<{ name: string }>
 
   return (
     <div className='flex flex-row h-full overflow-x-hidden w-full'>
-      <div className='invisible w-0 md:w-64 md:m-6 md:visible card card-compact max-h-96 bg-base-100 shadow-xl flex-none'>
+      <div className='invisible w-0 md:w-64 md:m-6 md:visible card max-h-96 bg-base-100 shadow-xl flex-none'>
         <figure>
           <Image src={ancient.image} alt={ancient.name} width={1024} height={1024} sizes='256px' />
         </figure>
@@ -80,7 +80,7 @@ export default function ChatWith({ params }: { params: Promise<{ name: string }>
                 ref={inputRef}
                 type='text'
                 placeholder='Type here'
-                className='input input-bordered w-full text-lg'
+                className='input w-full text-lg'
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
               />

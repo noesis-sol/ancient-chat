@@ -161,7 +161,7 @@ const AccordionSection = ({ data }: AccordionSectionProps) => {
                     value={section.ancient ?? ''}
                     onChange={(e) => updateAncient(section, e.target.value || null)}
                     disabled={loadingAncients[section.id]}
-                    className={`select select-bordered select-sm ${
+                    className={`select select-sm ${
                       loadingAncients[section.id] ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                   >
@@ -236,7 +236,7 @@ const AccordionSection = ({ data }: AccordionSectionProps) => {
                         disabled={loadingWeights[section.id]}
                         aria-invalid={draftInvalid}
                         title={`A share from ${MIN_WEIGHT} to ${MAX_WEIGHT}, relative to the other active indexes`}
-                        className={`input input-bordered input-sm w-24 ${draftInvalid ? 'input-error' : ''} ${
+                        className={`input input-sm w-24 ${draftInvalid ? 'input-error' : ''} ${
                           loadingWeights[section.id] ? 'opacity-50 cursor-not-allowed' : ''
                         }`}
                       />

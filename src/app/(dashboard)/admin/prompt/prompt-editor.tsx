@@ -100,10 +100,10 @@ export default function EditPrompt() {
         <div className='card-body'>
           <h2 className='card-title text-2xl mb-6'>Edit prompt</h2>
 
-          <label className='form-control w-full max-w-xs mb-6'>
-            <span className='label-text mb-1'>Ancient</span>
+          <label className='fieldset w-full max-w-xs mb-6'>
+            <span className='fieldset-legend'>Ancient</span>
             <select
-              className='select select-bordered'
+              className='select'
               value={ancient}
               onChange={(e) => changeAncient(e.target.value)}
               disabled={isSaving}
@@ -155,9 +155,9 @@ export default function EditPrompt() {
           )}
 
           <form onSubmit={handleSubmit} className='flex flex-col h-full'>
-            <div className='form-control flex-grow'>
+            <div className='flex flex-col flex-grow'>
               <textarea
-                className='textarea textarea-bordered w-full flex-grow min-h-[60vh]'
+                className='textarea w-full flex-grow min-h-[60vh]'
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder='Enter your text here...'
