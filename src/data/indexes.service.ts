@@ -1,7 +1,7 @@
 import { IndexList } from '@pinecone-database/pinecone';
 import { getPinecone } from '@/lib/pinecone';
 import { prisma } from '@/lib/prisma';
-import { Index } from '@prisma/client';
+import type { Index } from '@/generated/prisma/client';
 import { planIndexSync } from './index-sync';
 import { NotFoundError, orNotFound } from './not-found';
 

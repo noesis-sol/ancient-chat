@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@/generated/prisma/client';
 
 // Thrown by the services when the row a request names does not exist. The admin
 // routes answer it with a 404 carrying the message.

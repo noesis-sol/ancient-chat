@@ -1,7 +1,7 @@
 import { IndexesService } from '@/data/indexes.service';
 import { requireAdmin } from '@/utils/adminAuth';
 import { parseIndexAncientBody } from '@/utils/index-ancient';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@/generated/prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 
 const indexesService = new IndexesService();

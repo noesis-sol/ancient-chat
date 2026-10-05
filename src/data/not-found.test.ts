@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@/generated/prisma/client';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { db, pinecone } = vi.hoisted(() => ({

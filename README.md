@@ -16,9 +16,9 @@ vector indexes that admins build by uploading source texts.
 - **Clerk** handles authentication. `src/middleware.ts` requires sign-in for
   `/chat`. Admins are the users whose email address is listed in
   `src/utils/emails.ts`.
-- **PostgreSQL via Prisma** (`prisma/schema.prisma`) stores the indexes'
-  ancient, active flag and weight (`Index`) and each ancient's system prompt
-  (`Prompt`).
+- **PostgreSQL via Prisma 7** (`prisma/schema.prisma`, `prisma.config.ts`)
+  stores the indexes' ancient, active flag and weight (`Index`) and each
+  ancient's system prompt (`Prompt`).
 - **Pinecone** holds one serverless vector index per uploaded source folder.
   An upload splits each file into chunks, embeds them with OpenAI
   (`text-embedding-ada-002`, 1536 dimensions) and upserts them into the index
@@ -42,7 +42,9 @@ Pinecone, OpenAI and Clerk.
    npm ci
    ```
 
-   This also generates the Prisma client.
+   This also generates the Prisma client into `src/generated/prisma`
+   (gitignored) through the `postinstall` script. Run `npx prisma generate`
+   after changing `prisma/schema.prisma`.
 
 2. Configure the environment. Copy `.env.example` to `.env` and fill it in:
 
@@ -67,8 +69,9 @@ Pinecone, OpenAI and Clerk.
    Set them in .env (see .env.example) or in the deployment environment.
    ```
 
-   Prisma CLI commands read `DATABASE_URL` from `.env` (not `.env.local`), so
-   keep it there or export it in your shell.
+   Prisma CLI commands read `DATABASE_URL` from `.env` (loaded by
+   `prisma.config.ts`), not `.env.local`, so keep it there or export it in
+   your shell.
 
 3. Create the database schema:
 
@@ -87,6 +90,12 @@ Pinecone, OpenAI and Clerk.
 
    To change the schema, edit `prisma/schema.prisma` and run
    `npx prisma migrate dev --name <change>` against a development database.
+   Since Prisma 7, `migrate dev` no longer regenerates the client: run
+   `npx prisma generate` afterwards.
+
+   A database from before the baseline may still have an unused `Message`
+   table. The migrations neither create nor drop it; drop it by hand once you
+   have checked it holds nothing you need.
 
 4. Configure Clerk. In the Clerk dashboard, enable the sign-in methods you
    want (email address is needed for admins, see below).

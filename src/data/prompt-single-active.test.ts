@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@/generated/prisma/client';
 import { describe, expect, it, vi } from 'vitest';
 import { findAncient } from './ancients';
 import { PromptService } from './prompt.service';
