@@ -1,11 +1,10 @@
-import { Document } from '@langchain/core/documents';
-import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 import { NextRequest, NextResponse } from 'next/server';
 import { embedDocuments, embeddingDimension } from '@/lib/embeddings';
 import { env } from '@/lib/env';
 import { getIndex, getPinecone } from '@/lib/pinecone';
 import { withAdmin } from '@/utils/adminAuth';
 import { EMBEDDING_MODEL_TAG, embeddingModelOf } from '@/utils/embedding-model';
+import { splitDocument } from '@/utils/text-splitter';
 import { replaceFileChunks } from '@/utils/upload-chunks';
 import { checkUploadPath, FILE_TOO_LARGE_MESSAGE, MAX_UPLOAD_FILE_SIZE } from '@/utils/upload-rules';
 
@@ -158,24 +157,12 @@ export const POST = withAdmin(async (request: NextRequest) => {
         // Get the index
         const index = await getIndex(indexName);
 
-        // Initialize text splitter
-        const textSplitter = new RecursiveCharacterTextSplitter({
-            chunkSize: 1000,
-            chunkOverlap: 200,
-        });
-
-        // Create LangChain document
-        const doc = new Document({
-            pageContent: content,
-            metadata: {
-                source: path,
-                filename: filename,
-                type: fileType,
-            },
-        });
-
         // Split text into chunks
-        const docs = await textSplitter.splitDocuments([doc]);
+        const docs = splitDocument(content, {
+            source: path,
+            filename: filename,
+            type: fileType,
+        });
 
         // Embed and upsert the chunks in batches, then delete the ones a longer earlier upload left
         try {

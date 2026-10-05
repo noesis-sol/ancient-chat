@@ -1,0 +1,152 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`splitDocument > splits the sample text as LangChain did 1`] = `
+[
+  {
+    "metadata": {
+      "filename": "republic.md",
+      "loc": {
+        "lines": {
+          "from": 1,
+          "to": 3,
+        },
+      },
+      "source": "plato/republic.md",
+      "type": "text/markdown",
+    },
+    "pageContent": "# Republic, Book I
+
+Sentence 1 of the dialogue, in which Socrates asks what justice is. Sentence 2 of the dialogue, in which Socrates asks what justice is. Sentence 3 of the dialogue, in which Socrates asks what justice is.",
+  },
+  {
+    "metadata": {
+      "filename": "republic.md",
+      "loc": {
+        "lines": {
+          "from": 5,
+          "to": 5,
+        },
+      },
+      "source": "plato/republic.md",
+      "type": "text/markdown",
+    },
+    "pageContent": "Sentence 4 of the dialogue, in which Socrates asks what justice is. Sentence 5 of the dialogue, in which Socrates asks what justice is. Sentence 6 of the dialogue, in which Socrates asks what justice is. Sentence 7 of the dialogue, in which Socrates asks what justice is. Sentence 8 of the dialogue, in which Socrates asks what justice is. Sentence 9 of the dialogue, in which Socrates asks what justice is. Sentence 10 of the dialogue, in which Socrates asks what justice is. Sentence 11 of the dialogue, in which Socrates asks what justice is. Sentence 12 of the dialogue, in which Socrates asks what justice is. Sentence 13 of the dialogue, in which Socrates asks what justice is. Sentence 14 of the dialogue, in which Socrates asks what justice is. Sentence 15 of the dialogue, in which Socrates asks what justice is. Sentence 16 of the dialogue, in which Socrates asks what justice is. Sentence 17 of the dialogue, in which Socrates asks what justice is. Sentence 18 of the dialogue, in which",
+  },
+  {
+    "metadata": {
+      "filename": "republic.md",
+      "loc": {
+        "lines": {
+          "from": 5,
+          "to": 5,
+        },
+      },
+      "source": "plato/republic.md",
+      "type": "text/markdown",
+    },
+    "pageContent": "asks what justice is. Sentence 16 of the dialogue, in which Socrates asks what justice is. Sentence 17 of the dialogue, in which Socrates asks what justice is. Sentence 18 of the dialogue, in which Socrates asks what justice is. Sentence 19 of the dialogue, in which Socrates asks what justice is. Sentence 20 of the dialogue, in which Socrates asks what justice is. Sentence 21 of the dialogue, in which Socrates asks what justice is. Sentence 22 of the dialogue, in which Socrates asks what justice is. Sentence 23 of the dialogue, in which Socrates asks what justice is.",
+  },
+  {
+    "metadata": {
+      "filename": "republic.md",
+      "loc": {
+        "lines": {
+          "from": 7,
+          "to": 20,
+        },
+      },
+      "source": "plato/republic.md",
+      "type": "text/markdown",
+    },
+    "pageContent": "Sentence 30 of the dialogue, in which Socrates asks what justice is.
+Sentence 31 of the dialogue, in which Socrates asks what justice is.
+Sentence 32 of the dialogue, in which Socrates asks what justice is.
+Sentence 33 of the dialogue, in which Socrates asks what justice is.
+Sentence 34 of the dialogue, in which Socrates asks what justice is.
+Sentence 35 of the dialogue, in which Socrates asks what justice is.
+Sentence 36 of the dialogue, in which Socrates asks what justice is.
+Sentence 37 of the dialogue, in which Socrates asks what justice is.
+Sentence 38 of the dialogue, in which Socrates asks what justice is.
+Sentence 39 of the dialogue, in which Socrates asks what justice is.
+Sentence 40 of the dialogue, in which Socrates asks what justice is.
+Sentence 41 of the dialogue, in which Socrates asks what justice is.
+Sentence 42 of the dialogue, in which Socrates asks what justice is.
+Sentence 43 of the dialogue, in which Socrates asks what justice is.",
+  },
+  {
+    "metadata": {
+      "filename": "republic.md",
+      "loc": {
+        "lines": {
+          "from": 19,
+          "to": 24,
+        },
+      },
+      "source": "plato/republic.md",
+      "type": "text/markdown",
+    },
+    "pageContent": "Sentence 42 of the dialogue, in which Socrates asks what justice is.
+Sentence 43 of the dialogue, in which Socrates asks what justice is.
+Sentence 44 of the dialogue, in which Socrates asks what justice is.
+Sentence 45 of the dialogue, in which Socrates asks what justice is.
+Sentence 46 of the dialogue, in which Socrates asks what justice is.
+Sentence 47 of the dialogue, in which Socrates asks what justice is.",
+  },
+  {
+    "metadata": {
+      "filename": "republic.md",
+      "loc": {
+        "lines": {
+          "from": 26,
+          "to": 26,
+        },
+      },
+      "source": "plato/republic.md",
+      "type": "text/markdown",
+    },
+    "pageContent": "Sentence 50 of the dialogue, in which Socrates asks what justice is. Sentence 51 of the dialogue, in which Socrates asks what justice is. Sentence 52 of the dialogue, in which Socrates asks what justice is. Sentence 53 of the dialogue, in which Socrates asks what justice is.",
+  },
+  {
+    "metadata": {
+      "filename": "republic.md",
+      "loc": {
+        "lines": {
+          "from": 28,
+          "to": 28,
+        },
+      },
+      "source": "plato/republic.md",
+      "type": "text/markdown",
+    },
+    "pageContent": "ΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗ",
+  },
+  {
+    "metadata": {
+      "filename": "republic.md",
+      "loc": {
+        "lines": {
+          "from": 28,
+          "to": 28,
+        },
+      },
+      "source": "plato/republic.md",
+      "type": "text/markdown",
+    },
+    "pageContent": "ΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣΣΩΚΡΑΤΗΣ",
+  },
+  {
+    "metadata": {
+      "filename": "republic.md",
+      "loc": {
+        "lines": {
+          "from": 30,
+          "to": 30,
+        },
+      },
+      "source": "plato/republic.md",
+      "type": "text/markdown",
+    },
+    "pageContent": "Sentence 60 of the dialogue, in which Socrates asks what justice is. Sentence 61 of the dialogue, in which Socrates asks what justice is.",
+  },
+]
+`;
