@@ -10,6 +10,16 @@ interface ErrorState {
   filePath?: string;
 }
 
+const calculateTotalSize = (items: UploadItem[]): number => {
+  return items.reduce((total, item) => {
+    if (item.type === 'file') {
+      return total + item.file.size;
+    } else {
+      return total + calculateTotalSize(item.children);
+    }
+  }, 0);
+};
+
 const IndexUploadModal = () => {
   const router = useRouter();
   const [files, setFiles] = useState<UploadItem[]>([]);
@@ -24,16 +34,6 @@ const IndexUploadModal = () => {
   const [confirmingCancel, setConfirmingCancel] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
-
-  const calculateTotalSize = (items: UploadItem[]): number => {
-    return items.reduce((total, item) => {
-      if (item.type === 'file') {
-        return total + item.file.size;
-      } else {
-        return total + calculateTotalSize(item.children);
-      }
-    }, 0);
-  };
 
   useEffect(() => {
     if (files.length > 0) {

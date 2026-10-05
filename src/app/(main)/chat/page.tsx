@@ -1,6 +1,7 @@
 'use client';
 
 import { ancients } from '@/app/(main)/chat/ancients';
+import Image from 'next/image';
 import Link from 'next/link';
 
 export default function Chat() {
@@ -16,7 +17,14 @@ export default function Chat() {
             >
               <figure>
                 <Link href={`/chat/${name}`}>
-                  <img src={image} alt={name} className='object-fill max-sm:h-28 max-h-52 sm:max-h-full' />
+                  <Image
+                    src={image}
+                    alt={name}
+                    width={1024}
+                    height={1024}
+                    sizes='(min-width: 768px) 256px, 100vw'
+                    className='object-fill max-sm:h-28 max-h-52 sm:max-h-full'
+                  />
                 </Link>
               </figure>
               <div className='flex-1 max-sm:h-20 min-h-32'>

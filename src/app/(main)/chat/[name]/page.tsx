@@ -4,6 +4,7 @@ import Message from '@/app/(main)/chat/[name]/message';
 import { ancients } from '@/app/(main)/chat/ancients';
 import { PaperAirplaneIcon } from '@heroicons/react/16/solid';
 import { Message as AiMessage, useChat } from 'ai/react';
+import Image from 'next/image';
 import { redirect } from 'next/navigation';
 import React, { useEffect, useRef } from 'react';
 import { chatFont } from '@/utils/fonts';
@@ -47,7 +48,7 @@ export default function ChatWith({ params }: { params: Promise<{ name: string }>
     <div className='flex flex-row h-full overflow-x-hidden w-full'>
       <div className='invisible w-0 md:w-64 md:m-6 md:visible card card-compact max-h-96 bg-base-100 shadow-xl flex-none'>
         <figure>
-          <img src={ancient.image} alt={ancient.name} />
+          <Image src={ancient.image} alt={ancient.name} width={1024} height={1024} sizes='256px' />
         </figure>
         <div className='card-body'>
           <h2 className='card-title'>{ancient.name}</h2>
