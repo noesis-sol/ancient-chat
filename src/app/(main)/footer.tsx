@@ -3,7 +3,7 @@ export default function Footer() {
     <footer className='h-10 footer p-2 bg-black text-white shrink-0'>
       <div className='flex flex-row w-full justify-between'>
         <aside className='items-center grid-flow-col'>
-          <p>AGR - All right reserved</p>
+          <p>© {new Date().getFullYear()} AGR - All rights reserved</p>
         </aside>
         <nav className='flex flex-row gap-3'>
           <a rel='noopener' href='https://www.youtube.com/@AncientGreeceRevisited' target='_blank'>
