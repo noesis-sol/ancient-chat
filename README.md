@@ -127,9 +127,8 @@ instance. The other variables are only checked when the server starts.
 
 `npm run check` (also run by CI) builds through `scripts/check-build.mjs`,
 which loads the `.env` files and fills in a well-formed placeholder for
-`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `PINECONE_API_KEY` and `OPENAI_API_KEY`
-when they are unset. Never deploy the `.next` output of such a build: the
-placeholder Clerk key is baked into it.
+`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` when it is unset. Never deploy the `.next`
+output of such a build: the placeholder Clerk key is baked into it.
 
 ## Deploying
 
