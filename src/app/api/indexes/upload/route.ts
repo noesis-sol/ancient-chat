@@ -4,6 +4,7 @@ import { Pinecone } from '@pinecone-database/pinecone';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 import { NextRequest, NextResponse } from 'next/server';
 import { env } from '@/lib/env';
+import { withAdmin } from '@/utils/adminAuth';
 import { cleanMetadata, getRootFolderName, sanitizeIndexName } from '@/utils/index-upload';
 
 // Custom error class for better error handling
@@ -18,7 +19,7 @@ class IndexError extends Error {
     }
 }
 
-export async function POST(request: NextRequest) {
+export const POST = withAdmin(async (request: NextRequest) => {
     try {
         const formData = await request.formData();
         const file = formData.get('file') as File;
@@ -237,4 +238,4 @@ export async function POST(request: NextRequest) {
             { status: 500 }
         );
     }
-}
+});

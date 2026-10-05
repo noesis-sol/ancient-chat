@@ -32,3 +32,9 @@ export const requireAdmin = async (request: NextRequest): Promise<NextResponse |
 
   return NextResponse.json({ error: result.error }, { status: result.status });
 };
+
+// Wraps a route handler so it runs only for admins; others get the 401/403 from requireAdmin.
+export const withAdmin =
+  <Args extends unknown[]>(handler: (request: NextRequest, ...args: Args) => Promise<Response>) =>
+  async (request: NextRequest, ...args: Args): Promise<Response> =>
+    (await requireAdmin(request)) ?? handler(request, ...args);
