@@ -30,7 +30,11 @@ const { default: AdminLayout } = await import('@/app/(dashboard)/layout');
 const { default: AdminPage } = await import('@/app/(dashboard)/admin/page');
 const { default: EditPromptPage } = await import('@/app/(dashboard)/admin/prompt/page');
 
-const signedOut = () => clerk.auth.mockResolvedValue({ userId: null, sessionClaims: null });
+const redirectToSignIn = vi.fn(() => {
+  throw new Error('NEXT_REDIRECT /sign-in');
+});
+
+const signedOut = () => clerk.auth.mockResolvedValue({ userId: null, sessionClaims: null, redirectToSignIn });
 
 const signedInAs = (role: string) =>
   clerk.auth.mockResolvedValue({ userId: 'user_1', sessionClaims: { metadata: { role } } });
@@ -47,11 +51,12 @@ beforeEach(() => {
 });
 
 describe.each(views)('$name', ({ render }) => {
-  it('redirects a signed-out visitor home', async () => {
+  it('sends a signed-out visitor to sign in', async () => {
     signedOut();
 
-    await expect(render()).rejects.toThrow('NEXT_REDIRECT /');
-    expect(navigation.redirect).toHaveBeenCalledWith('/');
+    await expect(render()).rejects.toThrow('NEXT_REDIRECT /sign-in');
+    expect(redirectToSignIn).toHaveBeenCalledOnce();
+    expect(navigation.redirect).not.toHaveBeenCalled();
   });
 
   it('redirects a signed-in non-admin home', async () => {

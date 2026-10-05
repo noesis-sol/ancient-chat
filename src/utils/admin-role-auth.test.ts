@@ -82,11 +82,15 @@ describe('isAdmin', () => {
 });
 
 describe('redirectNonAdmin', () => {
-  it('redirects a signed-out visitor home', async () => {
-    clerk.auth.mockResolvedValue({ userId: null, sessionClaims: null });
+  it('sends a signed-out visitor to sign in', async () => {
+    const redirectToSignIn = vi.fn(() => {
+      throw new Error('NEXT_REDIRECT /sign-in');
+    });
+    clerk.auth.mockResolvedValue({ userId: null, sessionClaims: null, redirectToSignIn });
 
-    await expect(redirectNonAdmin()).rejects.toThrow('NEXT_REDIRECT /');
-    expect(navigation.redirect).toHaveBeenCalledWith('/');
+    await expect(redirectNonAdmin()).rejects.toThrow('NEXT_REDIRECT /sign-in');
+    expect(redirectToSignIn).toHaveBeenCalledOnce();
+    expect(navigation.redirect).not.toHaveBeenCalled();
   });
 
   it('redirects a signed-in non-admin home', async () => {

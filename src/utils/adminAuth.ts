@@ -7,9 +7,15 @@ import { NextRequest, NextResponse } from 'next/server';
 export const isAdmin = (authState: AdminAuthState): Promise<boolean> =>
   resolveAdminRole(authState, async () => (await currentUser())?.publicMetadata);
 
-// For admin pages and layouts: sends anyone who is not an admin back to the home page.
+// For admin pages and layouts: sends signed-out visitors to sign in and anyone else who is not an
+// admin back to the home page.
 export const redirectNonAdmin = async (): Promise<void> => {
-  if (!(await isAdmin(await auth()))) {
+  const authState = await auth();
+  if (!authState.userId) {
+    authState.redirectToSignIn();
+  }
+
+  if (!(await isAdmin(authState))) {
     redirect('/');
   }
 };
