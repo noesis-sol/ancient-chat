@@ -3,6 +3,7 @@ import { OpenAIEmbeddings } from '@langchain/openai';
 import { Pinecone } from '@pinecone-database/pinecone';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 import { NextRequest, NextResponse } from 'next/server';
+import { env } from '@/lib/env';
 import { cleanMetadata, getRootFolderName, sanitizeIndexName } from '@/utils/index-upload';
 
 // Custom error class for better error handling
@@ -107,8 +108,8 @@ export async function POST(request: NextRequest) {
                     metric: 'cosine',
                     spec: {
                         serverless: {
-                            cloud: 'aws',
-                            region: 'us-east-1'
+                            cloud: env().PINECONE_CLOUD,
+                            region: env().PINECONE_REGION
                         }
                     }
                 });
