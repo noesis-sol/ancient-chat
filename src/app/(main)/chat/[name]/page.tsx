@@ -3,10 +3,10 @@
 import ChatError from '@/app/(main)/chat/[name]/chat-error';
 import Message from '@/app/(main)/chat/[name]/message';
 import { findAncient } from '@/data/ancients';
-import { PaperAirplaneIcon } from '@heroicons/react/16/solid';
 import { createChatTransport, isBusy, isThinking, messageSources, messageText, type ChatUIMessage } from '@/utils/ui-message';
 import { useChat } from '@ai-sdk/react';
 import Image from 'next/image';
+import { SendHorizontal } from 'lucide-react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { chatFont } from '@/utils/fonts';
 
@@ -88,7 +88,7 @@ export default function ChatWith({ params }: { params: Promise<{ name: string }>
             <div className='ml-2'>
               <button type='submit' className='btn btn-primary text-lg' disabled={!canSend}>
                 <span>Send</span>
-                <PaperAirplaneIcon className='h-5'></PaperAirplaneIcon>
+                <SendHorizontal className='h-5 w-5' />
               </button>
             </div>
           </form>

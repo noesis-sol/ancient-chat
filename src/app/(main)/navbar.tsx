@@ -2,10 +2,9 @@
 
 import { hasAdminRole } from '@/utils/admin-role';
 import { Show, UserButton, useAuth, useUser } from '@clerk/nextjs';
-import { faSliders } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Image from 'next/image';
 import Link from 'next/link';
+import { SlidersHorizontal } from 'lucide-react';
 
 export default function Navbar() {
   const { sessionClaims } = useAuth();
@@ -29,7 +28,7 @@ export default function Navbar() {
           <UserButton>
             <UserButton.MenuItems>
               {isAdmin && (
-                <UserButton.Link href='/admin' label='Admin' labelIcon={<FontAwesomeIcon icon={faSliders} />} />
+                <UserButton.Link href='/admin' label='Admin' labelIcon={<SlidersHorizontal size={16} />} />
               )}
             </UserButton.MenuItems>
           </UserButton>
