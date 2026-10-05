@@ -3,9 +3,10 @@
 // at startup with the names of the missing variables.
 export async function register() {
   if (process.env.NEXT_RUNTIME === 'nodejs') {
-    const { env, EnvError } = await import('@/lib/env');
+    const { env, EnvError, upstashRedis } = await import('@/lib/env');
+    let parsed;
     try {
-      env();
+      parsed = env();
     } catch (error) {
       // In development, rethrow so the dev server shows it. In production a
       // thrown error only fails each request with a 500 while the server stays
@@ -15,6 +16,9 @@ export async function register() {
       }
       console.error(error.message);
       process.exit(1);
+    }
+    if (!upstashRedis(parsed)) {
+      console.warn('Rate limiting is off: UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are not set.');
     }
   }
 }

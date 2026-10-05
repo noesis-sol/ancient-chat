@@ -1,5 +1,6 @@
 'use client';
 
+import ChatError from '@/app/(main)/chat/[name]/chat-error';
 import Message from '@/app/(main)/chat/[name]/message';
 import { findAncient } from '@/data/ancients';
 import { PaperAirplaneIcon } from '@heroicons/react/16/solid';
@@ -69,18 +70,7 @@ export default function ChatWith({ params }: { params: Promise<{ name: string }>
                     />
                   ))}
                 {showThinking ? <Message key='loading' message='...' direction='incoming' isLoading={true} /> : null}
-                {error ? (
-                  <div className='col-start-1 col-end-13'>
-                    <div className='chat chat-start'>
-                      <div role='alert' className='chat-bubble chat-bubble-error'>
-                        Something went wrong while getting a reply.{' '}
-                        <button type='button' className='btn btn-sm ml-2' onClick={() => regenerate()}>
-                          Retry
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
+                {error ? <ChatError error={error} onRetry={() => regenerate()} /> : null}
               </div>
             </div>
           </div>

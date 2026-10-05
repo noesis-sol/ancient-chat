@@ -13,6 +13,85 @@ const required = () => z.preprocess(unsetIfEmpty, z.string({ required_error: 'no
 const withDefault = <T extends z.ZodTypeAny>(schema: T, value: z.input<T>) =>
   z.preprocess(unsetIfEmpty, schema.default(value));
 
+const optional = () => z.preprocess(unsetIfEmpty, z.string().trim().optional());
+
+const optionalHttpUrl = () =>
+  z.preprocess(
+    unsetIfEmpty,
+    z
+      .string()
+      .trim()
+      .refine((value) => /^https?:\/\/[^/]/.test(value) && URL.canParse(value), {
+        message: 'must be an http:// or https:// URL',
+      })
+      .optional()
+  );
+
+const positiveInteger = (fallback: number) =>
+  withDefault(
+    z
+      .string()
+      .trim()
+      .regex(/^[1-9]\d*$/, { message: 'must be a whole number above 0' })
+      .transform(Number),
+    String(fallback)
+  );
+
+// Rate limiting of /api/chat (src/lib/rate-limit.ts). Upstash Redis keeps the
+// counters. Its Vercel Marketplace integration sets either the UPSTASH_ or the
+// KV_ pair; without either, rate limiting is off.
+const rateLimitShape = {
+  UPSTASH_REDIS_REST_URL: optionalHttpUrl(),
+  UPSTASH_REDIS_REST_TOKEN: optional(),
+  KV_REST_API_URL: optionalHttpUrl(),
+  KV_REST_API_TOKEN: optional(),
+  CHAT_RATE_LIMIT_PER_MINUTE: positiveInteger(20),
+  CHAT_RATE_LIMIT_PER_DAY: positiveInteger(200),
+  // Set by Vercel: production, preview or development.
+  VERCEL_ENV: optional(),
+};
+
+type RateLimitEnv = z.infer<z.ZodObject<typeof rateLimitShape>>;
+
+const upstashPairs = [
+  ['UPSTASH_REDIS_REST_URL', 'UPSTASH_REDIS_REST_TOKEN'],
+  ['KV_REST_API_URL', 'KV_REST_API_TOKEN'],
+] as const;
+
+// The Upstash Redis REST credentials, preferring the UPSTASH_ pair, or
+// undefined when neither pair is set.
+export function upstashRedis(env: RateLimitEnv): { url: string; token: string } | undefined {
+  for (const [url, token] of upstashPairs) {
+    const [urlValue, tokenValue] = [env[url], env[token]];
+    if (urlValue && tokenValue) {
+      return { url: urlValue, token: tokenValue };
+    }
+  }
+  return undefined;
+}
+
+function checkRateLimitStore(env: RateLimitEnv, ctx: z.RefinementCtx) {
+  for (const [url, token] of upstashPairs) {
+    if (env[url] && !env[token]) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: [token], message: `not set, but ${url} is` });
+    } else if (!env[url] && env[token]) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: [url], message: `not set, but ${token} is` });
+    }
+  }
+  // Without the store, production would run without rate limiting.
+  if (env.VERCEL_ENV === 'production' && !upstashRedis(env)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['UPSTASH_REDIS_REST_URL'],
+      message:
+        'not set: production on Vercel needs Upstash Redis for rate limiting ' +
+        '(UPSTASH_REDIS_REST_URL/TOKEN or KV_REST_API_URL/TOKEN)',
+    });
+  }
+}
+
+const rateLimitSchema = z.object(rateLimitShape).superRefine(checkRateLimitStore);
+
 const envSchema = z.object({
   DATABASE_URL: required().refine((value) => /^postgres(ql)?:\/\//.test(value), {
     message: 'must be a postgresql:// connection string',
@@ -43,7 +122,8 @@ const envSchema = z.object({
       })
       .optional()
   ),
-});
+  ...rateLimitShape,
+}).superRefine(checkRateLimitStore);
 
 export type Env = z.infer<typeof envSchema>;
 
@@ -57,12 +137,22 @@ export class EnvError extends Error {
   }
 }
 
-export function parseEnv(source: Record<string, string | undefined>): Env {
-  const result = envSchema.safeParse(source);
+function parse<T extends z.ZodTypeAny>(schema: T, source: Record<string, string | undefined>): z.infer<T> {
+  const result = schema.safeParse(source);
   if (!result.success) {
     throw new EnvError(result.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`));
   }
   return result.data;
+}
+
+export function parseEnv(source: Record<string, string | undefined>): Env {
+  return parse(envSchema, source);
+}
+
+// Only the rate limiting variables, which src/lib/rate-limit.ts reads without
+// needing the others.
+export function parseRateLimitEnv(source: Record<string, string | undefined>): RateLimitEnv {
+  return parse(rateLimitSchema, source);
 }
 
 let cached: Env | undefined;

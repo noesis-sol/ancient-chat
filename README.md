@@ -30,6 +30,9 @@ vector indexes that admins build by uploading source texts.
   prompt and the passages as the system message.
 - **Environment** is validated at server startup (`src/instrumentation.ts`,
   `src/lib/env.ts`).
+- **Rate limiting** (`src/lib/rate-limit.ts`): `/api/chat` allows each
+  signed-in user a number of messages per minute and per day, counted in
+  Upstash Redis.
 
 ## Setup
 
@@ -60,6 +63,9 @@ Pinecone, OpenAI and Clerk.
    | `PINECONE_CLOUD` | no | Cloud for new Pinecone indexes: `aws` (default), `gcp` or `azure` |
    | `PINECONE_REGION` | no | Region for new Pinecone indexes (default `us-east-1`) |
    | `PINECONE_CONTROLLER_HOST` | no | Pinecone Local's URL (`http://localhost:5080`) instead of Pinecone's cloud, see [Local Pinecone](#local-pinecone) |
+   | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | production on Vercel | Upstash Redis for rate limiting `/api/chat`, see [Rate limiting](#rate-limiting); `KV_REST_API_URL`/`KV_REST_API_TOKEN` work too |
+   | `CHAT_RATE_LIMIT_PER_MINUTE` | no | Messages a user may send per minute (default 20) |
+   | `CHAT_RATE_LIMIT_PER_DAY` | no | Messages a user may send per day (default 200) |
 
    When a required variable is missing or malformed, the server stops at
    startup with an error that names it:
@@ -147,6 +153,24 @@ Pinecone Local is not the real service:
 - It emulates an older Pinecone API version than the SDK targets, so
   behaviour can differ from the cloud.
 - It doesn't replace a manual pass against real Pinecone before a release.
+
+### Rate limiting
+
+Each chat message costs an OpenAI embedding, Pinecone queries and a
+completion, so `/api/chat` limits every signed-in user, by Clerk user ID, to
+`CHAT_RATE_LIMIT_PER_MINUTE` (default 20) messages a minute and
+`CHAT_RATE_LIMIT_PER_DAY` (default 200) a day, in sliding windows. Past a
+limit it answers `429 Too Many Requests` with a `Retry-After` header, and the
+chat asks the user to wait that long.
+
+The counters live in Upstash Redis. On Vercel, add the "Upstash for Redis"
+integration from the Marketplace, which sets `UPSTASH_REDIS_REST_URL` and
+`UPSTASH_REDIS_REST_TOKEN` (or `KV_REST_API_URL` and `KV_REST_API_TOKEN`).
+Without them, rate limiting is off, which suits local development and tests;
+the server says so in one line at startup. A production deployment on Vercel
+(`VERCEL_ENV=production`) fails its build and startup without them. If Redis
+is unreachable, requests go through and the error is logged, so an Upstash
+outage doesn't take the chat down.
 
 ## Checks
 

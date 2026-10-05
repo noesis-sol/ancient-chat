@@ -1,5 +1,6 @@
 import { Ancient, findEnabledAncient } from '@/data/ancients';
 import { PromptService } from '@/data/prompt.service';
+import { chatRateLimiters } from '@/lib/rate-limit';
 import {
   chatStreamResponse,
   MAX_BODY_BYTES,
@@ -8,6 +9,7 @@ import {
   sanitizeUserName,
 } from '@/utils/chat-request';
 import { queryPineconeContext } from '@/utils/pinecone';
+import { checkRateLimits, rateLimitedResponse } from '@/utils/rate-limit';
 import { openai } from '@ai-sdk/openai';
 import { currentUser, getAuth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
@@ -34,6 +36,12 @@ export async function POST(request: NextRequest) {
   const { userId } = getAuth(request);
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // Each request costs an embedding, Pinecone queries and a completion.
+  const rateLimit = await checkRateLimits(chatRateLimiters(), userId);
+  if (rateLimit.limited) {
+    return rateLimitedResponse(rateLimit.retryAfter);
   }
 
   // The chat page turns away disabled ancients too, but clients can call this route directly.

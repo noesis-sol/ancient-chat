@@ -20,8 +20,14 @@ function problemsFor(source: Record<string, string | undefined>) {
 }
 
 describe('parseEnv', () => {
-  it('accepts a complete environment and defaults the Pinecone location', () => {
-    expect(parseEnv(valid)).toEqual({ ...valid, PINECONE_CLOUD: 'aws', PINECONE_REGION: 'us-east-1' });
+  it('accepts a complete environment and defaults the Pinecone location and chat rate limits', () => {
+    expect(parseEnv(valid)).toEqual({
+      ...valid,
+      PINECONE_CLOUD: 'aws',
+      PINECONE_REGION: 'us-east-1',
+      CHAT_RATE_LIMIT_PER_MINUTE: 20,
+      CHAT_RATE_LIMIT_PER_DAY: 200,
+    });
   });
 
   it('reads a configured Pinecone cloud and region', () => {
