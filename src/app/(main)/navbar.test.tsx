@@ -14,7 +14,7 @@ vi.mock('@clerk/nextjs', () => {
     MenuItems: Passthrough,
     Link: ({ href, label }: { href: string; label: string }) => <a href={href}>{label}</a>
   });
-  return { ...clerk, SignedIn: Passthrough, UserButton };
+  return { ...clerk, Show: Passthrough, UserButton };
 });
 
 vi.mock('next/image', () => ({ default: ({ alt }: { alt: string }) => <img alt={alt} /> }));

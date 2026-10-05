@@ -1,7 +1,7 @@
 'use client';
 
 import { hasAdminRole } from '@/utils/admin-role';
-import { SignedIn, UserButton, useAuth, useUser } from '@clerk/nextjs';
+import { Show, UserButton, useAuth, useUser } from '@clerk/nextjs';
 import { faSliders } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Image from 'next/image';
@@ -25,7 +25,7 @@ export default function Navbar() {
             src='/logo.jpg'
           />
         </Link>
-        <SignedIn>
+        <Show when='signed-in'>
           <UserButton>
             <UserButton.MenuItems>
               {isAdmin && (
@@ -33,7 +33,7 @@ export default function Navbar() {
               )}
             </UserButton.MenuItems>
           </UserButton>
-        </SignedIn>
+        </Show>
       </div>
     </header>
   );

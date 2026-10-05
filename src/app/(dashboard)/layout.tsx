@@ -10,9 +10,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   await redirectNonAdmin();
 
   return (
-    <ClerkProvider>
-      <html lang='en' className={lemonMilkFont.className}>
-        <body>
+    <html lang='en' className={lemonMilkFont.className}>
+      <body>
+        <ClerkProvider>
           <div className='drawer lg:drawer-open'>
             <input id='menu-drawer' type='checkbox' className='drawer-toggle' />
             <div className='drawer-content flex flex-col max-h-screen overflow-y-auto flex-grow'>
@@ -51,8 +51,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               </div>
             </div>
           </div>
-        </body>
-      </html>
-    </ClerkProvider>
+        </ClerkProvider>
+      </body>
+    </html>
   );
 }

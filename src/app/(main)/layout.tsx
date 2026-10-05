@@ -16,16 +16,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
-      <html lang='en' className={lemonMilkFont.className}>
-        <body>
+    <html lang='en' className={lemonMilkFont.className}>
+      <body>
+        <ClerkProvider>
           <div className='flex flex-col h-full w-full'>
             <Navbar />
             <main className='flex-1 overflow-auto min-h-[calc(100dvh-120px)] justify-items-center'>{children}</main>
             <Footer />
           </div>
-        </body>
-      </html>
-    </ClerkProvider>
+        </ClerkProvider>
+      </body>
+    </html>
   );
 }
