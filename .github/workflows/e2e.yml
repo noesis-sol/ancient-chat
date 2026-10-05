@@ -1,0 +1,87 @@
+name: E2E
+
+# Cypress against the production build, with PostgreSQL and Pinecone Local in
+# containers and a Clerk development instance. The secrets live in the `e2e`
+# environment; README.md, "End-to-end tests", lists them.
+
+on:
+  pull_request:
+    branches: [main, dev]
+  push:
+    branches: [main, dev]
+  workflow_dispatch:
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    # GitHub withholds secrets from pull requests opened from forks and by
+    # Dependabot, so the run could only fail there.
+    if: >-
+      github.event_name != 'pull_request' ||
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+      github.actor != 'dependabot[bot]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: e2e
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ancient_chat
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/ancient_chat
+      # Pinecone Local ignores the API key, but the app requires one.
+      PINECONE_CONTROLLER_HOST: http://localhost:5080
+      PINECONE_API_KEY: pinecone-local
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+      CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+      NEXT_PUBLIC_CLERK_SIGN_IN_URL: /sign-in
+      NEXT_PUBLIC_CLERK_SIGN_UP_URL: /sign-up
+      E2E_CLERK_USER_EMAIL: ${{ secrets.E2E_CLERK_USER_EMAIL }}
+    steps:
+      - uses: actions/checkout@v4
+      # Started with docker run rather than as a service: each index gets its
+      # own port from 5081 up, so the whole range has to be published.
+      - name: Start Pinecone Local
+        run: >-
+          docker run -d --name pinecone-local
+          -e PORT=5080 -e PINECONE_HOST=localhost
+          -p 5080-5090:5080-5090 --platform linux/amd64
+          ghcr.io/pinecone-io/pinecone-local:latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/Cypress
+          key: cypress-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - run: npm ci
+      # npm may skip Cypress's postinstall, which downloads the binary.
+      - run: npx cypress install
+      - run: npx prisma migrate deploy
+      - run: npm run build
+      - name: Wait for Pinecone Local
+        run: curl -s -o /dev/null --retry 30 --retry-delay 1 --retry-connrefused http://localhost:5080/indexes
+      - run: npm run e2e
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: cypress-${{ github.run_attempt }}
+          path: |
+            cypress/screenshots
+            cypress/videos
+          if-no-files-found: ignore

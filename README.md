@@ -184,6 +184,92 @@ npm test           # vitest run (src/**/*.test.ts)
 CI (`.github/workflows/check.yml`) runs `npm ci && npm run check` on pushes
 and pull requests to `main` and `dev`.
 
+## End-to-end tests
+
+Cypress specs in `cypress/e2e` drive the production build (`next start`)
+against a Clerk development instance, PostgreSQL and
+[Pinecone Local](#local-pinecone). They need secrets and Docker, so
+`npm run check` doesn't run them.
+
+CI runs them in `.github/workflows/e2e.yml` on pushes to `main` and `dev`, on
+pull requests from branches of this repository, and on demand (Actions > E2E >
+Run workflow). Pull requests from forks and from Dependabot are skipped,
+because GitHub withholds secrets from them. Failure screenshots and the
+videos are uploaded as the run's `cypress-<attempt>` artifact.
+
+Pinecone Local is not the real service, so one manual pass against real
+Pinecone is still expected before each release.
+
+### Clerk development instance
+
+1. In the [Clerk dashboard](https://dashboard.clerk.com), create an
+   application for testing, or use the development instance of the existing
+   one. Use a development instance: Clerk only issues the testing tokens that
+   let Cypress past its bot protection to development instances.
+2. Under the instance's email settings, allow email addresses as an
+   identifier and the email verification code as a sign-in method. The specs
+   sign in with `cy.clerkSignIn({ strategy: 'email_code' })`.
+3. Create the test user (Users > Create user) with an email address
+   containing `+clerk_test`, such as `e2e+clerk_test@example.com`. Clerk sends
+   no mail to such addresses and accepts the code `424242` for them (test
+   mode, on by default in development instances).
+4. Copy the publishable and secret keys from the instance's API keys page.
+
+### Secrets
+
+Set these in the repository's `e2e` environment (Settings > Environments >
+`e2e`):
+
+| Secret | Purpose |
+| --- | --- |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Publishable key of the Clerk development instance (`pk_test_...`), for the build and for Cypress |
+| `CLERK_SECRET_KEY` | Secret key of that instance (`sk_test_...`), for the server and for fetching Clerk's testing token |
+| `OPENAI_API_KEY` | OpenAI API key: the server won't start without one, and the chat specs call OpenAI with it |
+| `E2E_CLERK_USER_EMAIL` | The test user's `+clerk_test` email address, signed in by `cy.clerkSignIn` |
+
+The workflow sets the other variables itself: `DATABASE_URL` for its
+PostgreSQL container, `PINECONE_CONTROLLER_HOST` and a placeholder
+`PINECONE_API_KEY` for Pinecone Local, and the sign-in and sign-up URLs.
+
+### Running locally
+
+1. Start [Pinecone Local](#local-pinecone) and a PostgreSQL container:
+
+   ```bash
+   docker run -d --name ancient-chat-postgres -e POSTGRES_PASSWORD=postgres \
+     -e POSTGRES_DB=ancient_chat -p 5432:5432 postgres:16
+   ```
+
+2. In `.env`, which both the app and Cypress read, set:
+
+   ```bash
+   DATABASE_URL=postgresql://postgres:postgres@localhost:5432/ancient_chat
+   PINECONE_CONTROLLER_HOST=http://localhost:5080
+   PINECONE_API_KEY=pinecone-local
+   OPENAI_API_KEY=...
+   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...  # the development instance's
+   CLERK_SECRET_KEY=sk_test_...
+   NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+   NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+   E2E_CLERK_USER_EMAIL=e2e+clerk_test@example.com
+   ```
+
+3. Create the schema, build and run the specs:
+
+   ```bash
+   npx prisma migrate deploy
+   npm run build
+   npm run e2e
+   ```
+
+`npm run e2e` starts `next start` on port 3000 (which must be free), runs
+`cypress run` once the server answers, then stops the server. `npm run e2e:open`
+does the same with the development server and Cypress's interactive runner.
+Both wait for `/favicon.ico` rather than `/`, because Clerk's middleware
+answers HTML requests for pages with a handshake redirect on development
+instances. If Cypress reports that its binary is missing (npm can skip the
+download on install), run `npx cypress install`.
+
 ## Building
 
 `next build` prerenders pages wrapped in `<ClerkProvider>`, so it needs

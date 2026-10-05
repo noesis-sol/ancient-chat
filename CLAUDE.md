@@ -69,6 +69,7 @@ npm run lint       # eslint . (flat config in eslint.config.mjs)
 npm test           # vitest run (src/**/*.test.{ts,tsx})
 npx vitest run src/utils/index-upload.test.ts  # one test file
 npm run build      # next build (needs the real env vars)
+npm run e2e        # Cypress against the built app; needs secrets and Docker, not in check
 ```
 
 `npm run check` builds through `scripts/check-build.mjs`, which loads the `.env`
