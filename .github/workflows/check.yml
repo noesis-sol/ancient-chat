@@ -17,5 +17,6 @@ jobs:
           cache: npm
       - run: npm ci
       # Typecheck, lint, tests and build. The build fills in placeholder API
-      # keys for anything unset (see scripts/check-build.mjs).
+      # keys and Clerk publishable key for anything unset (see
+      # scripts/check-build.mjs), so its output must not be deployed.
       - run: npm run check

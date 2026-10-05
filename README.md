@@ -22,6 +22,20 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and
 load Inter, a custom Google Font.
 
+## Building
+
+`next build` prerenders pages wrapped in `<ClerkProvider>`, so it needs
+`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` even though nothing runs at build time.
+The key is public and Next inlines it into the client bundle and the
+prerendered HTML, so a deploy build must use the real key of the target Clerk
+instance.
+
+`npm run check` (also run by CI) builds through `scripts/check-build.mjs`,
+which loads the `.env` files and fills in a well-formed placeholder for
+`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `PINECONE_API_KEY` and `OPENAI_API_KEY`
+when they are unset. Never deploy the `.next` output of such a build: the
+placeholder Clerk key is baked into it.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
