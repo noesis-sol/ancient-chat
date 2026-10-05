@@ -1,4 +1,4 @@
-import { CoreMessage, LanguageModel, streamText } from 'ai';
+import { convertToModelMessages, createUIMessageStreamResponse, LanguageModel, streamText, toUIMessageStream } from 'ai';
 import { z } from 'zod';
 
 // Limits on what a client may send to /api/chat. They bound the prompt we pay
@@ -13,21 +13,29 @@ export const MAX_NAME_CHARS = 40;
 
 export const STREAM_ERROR_MESSAGE = 'The reply could not be generated. Please try again.';
 
-export type ChatMessage = { role: 'user' | 'assistant'; content: string };
+// A validated UI message reduced to its text, ready for convertToModelMessages.
+export type ChatMessage = { role: 'user' | 'assistant'; parts: [{ type: 'text'; text: string }] };
 
 export type ChatRequestResult =
   | { ok: true; messages: ChatMessage[]; lastUserMessage: string }
   | { ok: false; status: 400 | 413; error: string };
 
-// Only user and assistant turns with plain string content are accepted, so a
-// client cannot inject system or tool messages. Unknown keys (useChat sends
-// id, parts, createdAt) are stripped.
+// useChat sends UI messages: { id, role, parts, metadata }. Only user and
+// assistant turns are accepted, so a client cannot inject system messages, and
+// only their text parts reach the model. Other parts (step-start, reasoning,
+// files, tools) and unknown keys are dropped.
 const chatRequestSchema = z.object({
   messages: z
     .array(
       z.object({
         role: z.enum(['user', 'assistant']),
-        content: z.string().max(MAX_MESSAGE_CHARS),
+        parts: z.array(
+          z
+            .object({ type: z.string(), text: z.unknown() })
+            .refine((part) => part.type !== 'text' || typeof part.text === 'string', {
+              message: 'Text parts must have string text',
+            })
+        ),
       })
     )
     .min(1)
@@ -77,13 +85,29 @@ export function parseChatRequest(body: string): ChatRequestResult {
       : { ok: false, status: 400, error: 'Invalid messages' };
   }
 
-  const messages = parsed.data.messages.slice(-HISTORY_LENGTH);
+  const messages = parsed.data.messages.map((message) => ({
+    role: message.role,
+    text: message.parts
+      .filter((part) => part.type === 'text')
+      .map((part) => part.text as string)
+      .join('\n'),
+  }));
+  if (messages.some((message) => message.text.length > MAX_MESSAGE_CHARS)) {
+    return { ok: false, status: 413, error: 'Too many or too long messages' };
+  }
+
   const lastMessage = messages[messages.length - 1];
-  if (lastMessage.role !== 'user' || lastMessage.content.trim() === '') {
+  if (lastMessage.role !== 'user' || lastMessage.text.trim() === '') {
     return { ok: false, status: 400, error: 'The last message must be a non-empty user message' };
   }
 
-  return { ok: true, messages, lastUserMessage: lastMessage.content };
+  // Assistant turns that failed before any text streamed in carry no text.
+  const history = messages
+    .filter((message) => message.text.trim() !== '')
+    .slice(-HISTORY_LENGTH)
+    .map(({ role, text }): ChatMessage => ({ role, parts: [{ type: 'text', text }] }));
+
+  return { ok: true, messages: history, lastUserMessage: lastMessage.text };
 }
 
 // The name comes from the user's editable Clerk profile and goes into the
@@ -99,27 +123,29 @@ export function sanitizeUserName(name: string | null | undefined): string {
     .trim();
 }
 
-export function chatStreamResponse({
+export async function chatStreamResponse({
   model,
-  system,
+  instructions,
   messages,
   abortSignal,
 }: {
   model: LanguageModel;
-  system: string;
-  messages: CoreMessage[];
+  instructions: string;
+  messages: ChatMessage[];
   abortSignal?: AbortSignal;
-}): Response {
+}): Promise<Response> {
   const result = streamText({
     model,
-    system,
-    messages,
-    maxTokens: MAX_OUTPUT_TOKENS,
+    instructions,
+    messages: await convertToModelMessages(messages),
+    maxOutputTokens: MAX_OUTPUT_TOKENS,
     abortSignal,
     onError: ({ error }) => console.error(error),
   });
 
   // Errors from the model arrive after the response has started, so they are
   // sent to the client as an error part instead of ending the stream silently.
-  return result.toDataStreamResponse({ getErrorMessage: () => STREAM_ERROR_MESSAGE });
+  return createUIMessageStreamResponse({
+    stream: toUIMessageStream({ stream: result.stream, onError: () => STREAM_ERROR_MESSAGE }),
+  });
 }

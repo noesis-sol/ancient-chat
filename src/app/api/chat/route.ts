@@ -46,11 +46,11 @@ export async function POST(request: NextRequest) {
   try {
     const user = await currentUser();
     const context = await queryPineconeContext(chatRequest.lastUserMessage);
-    const system = await getPrompt(sanitizeUserName(user?.firstName), context.join('\n'));
+    const instructions = await getPrompt(sanitizeUserName(user?.firstName), context.join('\n'));
 
-    return chatStreamResponse({
+    return await chatStreamResponse({
       model: openai('gpt-4o-mini'),
-      system,
+      instructions,
       messages: chatRequest.messages,
       abortSignal: request.signal,
     });

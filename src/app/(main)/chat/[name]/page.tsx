@@ -3,10 +3,11 @@
 import Message from '@/app/(main)/chat/[name]/message';
 import { ancients } from '@/app/(main)/chat/ancients';
 import { PaperAirplaneIcon } from '@heroicons/react/16/solid';
-import { Message as AiMessage, useChat } from 'ai/react';
+import { isBusy, isThinking, messageReasoning, messageText } from '@/utils/ui-message';
+import { useChat } from '@ai-sdk/react';
 import Image from 'next/image';
 import { redirect } from 'next/navigation';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { chatFont } from '@/utils/fonts';
 
 export default function ChatWith({ params }: { params: Promise<{ name: string }> }) {
@@ -30,18 +31,19 @@ export default function ChatWith({ params }: { params: Promise<{ name: string }>
     }
   }, []);
 
-  const { messages, input, handleInputChange, handleSubmit, isLoading, error, reload } = useChat();
+  const [input, setInput] = useState('');
+  const { messages, sendMessage, status, error, regenerate } = useChat();
 
-  const canSend = input.trim() !== '' && !isLoading;
-  // Show the dots until the reply starts streaming in.
-  const isThinking = isLoading && messages[messages.length - 1]?.role === 'user';
+  const canSend = input.trim() !== '' && !isBusy(status);
+  const showThinking = isThinking(status, messages);
 
   const handleChatSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     if (!canSend) {
-      e.preventDefault();
       return;
     }
-    handleSubmit(e);
+    sendMessage({ text: input });
+    setInput('');
   };
 
   return (
@@ -60,23 +62,25 @@ export default function ChatWith({ params }: { params: Promise<{ name: string }>
           <div className='flex flex-col h-full overflow-x-auto mb-4'>
             <div className='flex flex-col-reverse h-full overflow-x-auto'>
               <div className='grid grid-cols-12 gap-y-2'>
-                {messages.map((message: AiMessage) => (
-                  <Message
-                    key={message.id}
-                    message={message.content}
-                    source={message.role === 'user' ? undefined : message.reasoning}
-                    id={message.id}
-                    direction={message.role === 'user' ? 'outgoing' : 'incoming'}
-                    isLoading={false}
-                  />
-                ))}
-                {isThinking ? <Message key='loading' message='...' direction='incoming' isLoading={true} /> : null}
-                {error && !isLoading ? (
+                {messages
+                  .filter((message) => messageText(message) !== '')
+                  .map((message) => (
+                    <Message
+                      key={message.id}
+                      message={messageText(message)}
+                      source={message.role === 'user' ? undefined : messageReasoning(message)}
+                      id={message.id}
+                      direction={message.role === 'user' ? 'outgoing' : 'incoming'}
+                      isLoading={false}
+                    />
+                  ))}
+                {showThinking ? <Message key='loading' message='...' direction='incoming' isLoading={true} /> : null}
+                {error ? (
                   <div className='col-start-1 col-end-13'>
                     <div className='chat chat-start'>
                       <div role='alert' className='chat-bubble chat-bubble-error'>
                         Something went wrong while getting a reply.{' '}
-                        <button type='button' className='btn btn-sm ml-2' onClick={() => reload()}>
+                        <button type='button' className='btn btn-sm ml-2' onClick={() => regenerate()}>
                           Retry
                         </button>
                       </div>
@@ -94,7 +98,7 @@ export default function ChatWith({ params }: { params: Promise<{ name: string }>
                 placeholder='Type here'
                 className='input input-bordered w-full text-lg'
                 value={input}
-                onChange={handleInputChange}
+                onChange={(e) => setInput(e.target.value)}
               />
             </div>
             <div className='ml-2'>
