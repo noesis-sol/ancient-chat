@@ -134,9 +134,10 @@ const { POST: upload } = await import('@/app/api/indexes/upload/route');
 const { IndexesService } = await import('@/data/indexes.service');
 const { getIndex, getPinecone } = await import('@/lib/pinecone');
 const { queryPineconeContext } = await import('@/utils/pinecone');
+const { integrationRunId } = await import('@/utils/integration-run');
 
-// Unique per run: Pinecone Local may hold other runs' indexes.
-const run = `it-${Date.now().toString(36)}`;
+// Unique per suite: Pinecone Local may hold other suites' and runs' indexes.
+const run = integrationRunId();
 const republic = { index: `${run}-republic`, path: `${run}-republic/book-1.txt`, chunks: 12 };
 const meno = { index: `${run}-meno`, path: `${run}-meno/dialogue.txt`, chunks: 4 };
 

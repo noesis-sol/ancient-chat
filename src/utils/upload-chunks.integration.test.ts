@@ -53,9 +53,10 @@ vi.mock('@langchain/openai', () => ({
 const { POST: upload } = await import('@/app/api/indexes/upload/route');
 const { getIndex, getPinecone } = await import('@/lib/pinecone');
 const { BATCH_SIZE, chunkIds, CHUNK_COUNT_KEY } = await import('@/utils/upload-chunks');
+const { integrationRunId } = await import('@/utils/integration-run');
 
-// Unique per run: Pinecone Local may hold other runs' indexes.
-const run = `it-${Date.now().toString(36)}`;
+// Unique per suite: Pinecone Local may hold other suites' and runs' indexes.
+const run = integrationRunId();
 const academy = `${run}-academy`;
 const long = { path: `${academy}/republic.txt`, chunks: BATCH_SIZE + 50 };
 const short = { path: `${academy}/meno.txt`, chunks: 3 };
