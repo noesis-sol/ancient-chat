@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
         let indexList;
         try {
             indexList = await pinecone.listIndexes();
-        } catch (error) {
+        } catch {
             throw new IndexError(
                 'Failed to connect to Pinecone',
                 503,
@@ -202,7 +202,7 @@ export async function POST(request: NextRequest) {
                     })
                 );
                 await index.upsert(vectors);
-            } catch (error) {
+            } catch {
                 throw new IndexError(
                     'Failed to process and upload document batch',
                     500,

@@ -14,7 +14,7 @@ export function getRootFolderName(path: string): string {
     return cleanPath.split('/')[0];
 }
 
-export function cleanMetadata(metadata: Record<string, any>): Record<string, string | number | boolean | string[]> {
+export function cleanMetadata(metadata: Record<string, unknown>): Record<string, string | number | boolean | string[]> {
     const cleanedMetadata: Record<string, string | number | boolean | string[]> = {};
     
     for (const [key, value] of Object.entries(metadata)) {

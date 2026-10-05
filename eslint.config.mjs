@@ -10,7 +10,7 @@ const eslintConfig = [
   {
     ignores: ['.next/**', 'node_modules/**', 'out/**', 'build/**', 'coverage/**', 'next-env.d.ts'],
   },
-  ...compat.extends('next/core-web-vitals'),
+  ...compat.extends('next/core-web-vitals', 'next/typescript'),
 ];
 
 export default eslintConfig;

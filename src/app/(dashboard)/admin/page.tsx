@@ -16,7 +16,7 @@ export default async function AdminPage() {
 
   //get all indexes from pinecone
 
-  let indexes = await indexesService.getIndexes();
+  const indexes = await indexesService.getIndexes();
 
   const myAccordionData =
     indexes?.map((index) => {

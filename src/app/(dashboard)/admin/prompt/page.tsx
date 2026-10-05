@@ -26,7 +26,7 @@ export default function EditPromptPage() {
       const data: Prompt = await response.json();
       setText(data.text);
       setPromptId(data.id);
-    } catch (err) {
+    } catch {
       setError('Failed to load prompt');
     } finally {
       setIsLoading(false);
@@ -52,7 +52,7 @@ export default function EditPromptPage() {
 
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
-    } catch (err) {
+    } catch {
       setError('Failed to update prompt');
     } finally {
       setIsSaving(false);

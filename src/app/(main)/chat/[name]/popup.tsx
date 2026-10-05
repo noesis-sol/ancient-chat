@@ -8,12 +8,10 @@ export default function Popup({ id, title, text }: { id: string; title: string; 
 
   return (
     <>
-      {/* @ts-ignore */}
       <label htmlFor={id} className='btn btn-link min-h-0 h-auto'>
         {title}
       </label>
       <input type='checkbox' id={id} className='modal-toggle' />
-      {/* @ts-ignore */}
       <label htmlFor={id} className='modal'>
         <div className='modal-box max-w-3xl text-base-content'>
           <h3 className='font-bold text-lg'>Source</h3>
