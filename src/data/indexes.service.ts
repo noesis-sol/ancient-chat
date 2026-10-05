@@ -1,4 +1,5 @@
 import { IndexList, Pinecone } from '@pinecone-database/pinecone';
+import { env } from '@/lib/env';
 import { prisma } from '@/lib/prisma';
 import { Index } from '@prisma/client';
 import { planIndexSync } from './index-sync';
@@ -10,10 +11,10 @@ export class IndexesService {
   private _pinecone?: Pinecone;
   private prisma = prisma;
 
-  // Created on first use: new Pinecone() throws when PINECONE_API_KEY is unset,
+  // Created on first use: env() throws when PINECONE_API_KEY is unset,
   // which breaks `next build` for routes that instantiate this service at module scope.
   private get pinecone() {
-    return (this._pinecone ??= new Pinecone());
+    return (this._pinecone ??= new Pinecone({ apiKey: env().PINECONE_API_KEY }));
   }
 
   // Admin view: syncs with Pinecone first so it shows Pinecone's current indexes.

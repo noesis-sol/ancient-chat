@@ -27,6 +27,8 @@ vi.mock('@/data/indexes.service', () => ({
   }
 }));
 
+vi.mock('@/lib/env', () => ({ env: () => ({ PINECONE_API_KEY: 'test-key' }) }));
+
 vi.mock('@pinecone-database/pinecone', () => ({
   Pinecone: class {
     constructor() {

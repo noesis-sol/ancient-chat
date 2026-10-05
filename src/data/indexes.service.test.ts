@@ -22,6 +22,7 @@ vi.mock('@pinecone-database/pinecone', () => ({
   }
 }));
 vi.mock('@/lib/prisma', () => ({ prisma: db }));
+vi.mock('@/lib/env', () => ({ env: () => ({ PINECONE_API_KEY: 'test-key' }) }));
 
 import { IndexesService } from './indexes.service';
 

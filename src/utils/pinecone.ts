@@ -1,23 +1,24 @@
 import { IndexesService } from '@/data/indexes.service';
+import { env } from '@/lib/env';
 import { allocateChunks } from '@/utils/chunk-allocation';
 import { ContextSource, toContextSource } from '@/utils/context-sources';
 import { Pinecone } from '@pinecone-database/pinecone';
 import { OpenAI } from 'openai';
 
-// Clients are created on first use: constructing them at module scope throws
+// Clients are created on first use: reading env() at module scope throws
 // during `next build` when the API keys are unset.
 let pinecone: Pinecone | undefined;
 let openai: OpenAI | undefined;
 
 function getPinecone() {
   return (pinecone ??= new Pinecone({
-    apiKey: process.env.PINECONE_API_KEY!
+    apiKey: env().PINECONE_API_KEY
   }));
 }
 
 function getOpenAI() {
   return (openai ??= new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
+    apiKey: env().OPENAI_API_KEY
   }));
 }
 

@@ -76,16 +76,8 @@ export const POST = withAdmin(async (request: NextRequest) => {
         }
 
         // Initialize Pinecone client
-        if (!process.env.PINECONE_API_KEY) {
-            throw new IndexError(
-                'Pinecone API key is not configured',
-                500,
-                'MISSING_API_KEY'
-            );
-        }
-
         const pinecone = new Pinecone({
-            apiKey: process.env.PINECONE_API_KEY,
+            apiKey: env().PINECONE_API_KEY,
         });
         
         // Get list of existing indexes
@@ -151,16 +143,8 @@ export const POST = withAdmin(async (request: NextRequest) => {
         const index = pinecone.Index(indexName);
 
         // Initialize OpenAI embeddings
-        if (!process.env.OPENAI_API_KEY) {
-            throw new IndexError(
-                'OpenAI API key is not configured',
-                500,
-                'MISSING_OPENAI_KEY'
-            );
-        }
-
         const embeddings = new OpenAIEmbeddings({
-            openAIApiKey: process.env.OPENAI_API_KEY,
+            openAIApiKey: env().OPENAI_API_KEY,
         });
 
         // Initialize text splitter

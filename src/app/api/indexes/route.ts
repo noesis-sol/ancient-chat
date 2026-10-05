@@ -1,11 +1,12 @@
 import { withAdmin } from '@/utils/adminAuth';
 import { Pinecone } from '@pinecone-database/pinecone';
 import { NextResponse } from 'next/server';
+import { env } from '@/lib/env';
 
 export const GET = withAdmin(async () => {
-  // Constructed per request: at module scope it throws during `next build` when PINECONE_API_KEY is unset.
+  // Constructed per request: at module scope env() throws during `next build` when PINECONE_API_KEY is unset.
   const pinecone = new Pinecone({
-    apiKey: process.env.PINECONE_API_KEY!
+    apiKey: env().PINECONE_API_KEY
   });
   const indexList = await pinecone.listIndexes();
 
