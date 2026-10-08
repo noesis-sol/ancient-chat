@@ -52,7 +52,7 @@ jobs:
       NEXT_PUBLIC_CLERK_SIGN_UP_URL: /sign-up
       E2E_CLERK_USER_EMAIL: ${{ secrets.E2E_CLERK_USER_EMAIL }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # Started with docker run rather than as a service: each index gets its
       # own port from 5081 up, so the whole range has to be published.
       - name: Start Pinecone Local
@@ -61,11 +61,11 @@ jobs:
           -e PORT=5080 -e PINECONE_HOST=localhost
           -p 5080-5090:5080-5090 --platform linux/amd64
           ghcr.io/pinecone-io/pinecone-local:latest
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: ~/.cache/Cypress
           key: cypress-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
@@ -77,7 +77,7 @@ jobs:
       - name: Wait for Pinecone Local
         run: curl -s -o /dev/null --retry 30 --retry-delay 1 --retry-connrefused http://localhost:5080/indexes
       - run: npm run e2e
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
           name: cypress-${{ github.run_attempt }}
